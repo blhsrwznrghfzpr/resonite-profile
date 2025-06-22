@@ -145,6 +145,38 @@
         font-size: 1em;
       }
 
+      .copyable {
+        cursor: pointer;
+        position: relative;
+        transition: background-color 0.2s ease;
+        padding: 2px 4px;
+        border-radius: 4px;
+      }
+
+      .copyable:hover {
+        background-color: rgba(102, 126, 234, 0.1);
+      }
+
+      .copy-feedback {
+        position: absolute;
+        top: -30px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #28a745;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.8em;
+        z-index: 1000;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+      }
+
+      .copy-feedback.show {
+        opacity: 1;
+      }
+
       .badges {
         display: flex;
         flex-wrap: wrap;
@@ -342,6 +374,9 @@
       <div class="header">
         <h1>Resonite ユーザー検索</h1>
         <p>Resoniteユーザーの情報を検索・表示できます</p>
+        <a href="https://github.com/blhsrwznrghfzpr/resonite-profile" target="_blank" style="display: inline-block; margin-top: 15px; padding: 10px 20px; background: rgba(255, 255, 255, 0.2); color: white; text-decoration: none; border-radius: 8px; font-weight: 500; transition: background 0.3s ease;">
+          GitHub で見る
+        </a>
       </div>
 
       <div class="search-section">
@@ -564,8 +599,14 @@
                           user.profile?.iconUrl
                         )}" alt="Avatar" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiByeD0iNDAiIGZpbGw9IiNlOWVjZWYiLz4KPHN2ZyB4PSIyMCIgeT0iMjAiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjNjY3ZWVhIj4KPHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+CjxwYXRoIGQ9Ik0yMCAyMXYtMmE0IDQgMCAwIDAtNC00SDhhNCA0IDAgMCAwLTQgNHYyIi8+CjxjaXJjbGUgY3g9IjEyIiBjeT0iNyIgcj0iNCIvPgo8L3N2Zz4KPHN2Zz4='">
                         <div class="user-basic">
-                            <div class="username">${user.username}</div>
-                            <div class="user-id">${user.id}</div>
+                            <div class="username copyable" onclick="copyToClipboard('${user.username}', this)">
+                                ${user.username}
+                                <div class="copy-feedback">コピーしました!</div>
+                            </div>
+                            <div class="user-id copyable" onclick="copyToClipboard('${user.id}', this)">
+                                ${user.id}
+                                <div class="copy-feedback">コピーしました!</div>
+                            </div>
                         </div>
                     </div>
 
@@ -661,6 +702,41 @@
           searchResults.innerHTML = "";
         }
       });
+
+      // クリップボードコピー機能
+      async function copyToClipboard(text, element) {
+        try {
+          await navigator.clipboard.writeText(text);
+          
+          // フィードバック表示
+          const feedback = element.querySelector('.copy-feedback');
+          feedback.classList.add('show');
+          
+          setTimeout(() => {
+            feedback.classList.remove('show');
+          }, 1500);
+        } catch (err) {
+          console.error('コピーに失敗しました:', err);
+          
+          // フォールバック: 選択状態にする
+          const range = document.createRange();
+          range.selectNodeContents(element);
+          const selection = window.getSelection();
+          selection.removeAllRanges();
+          selection.addRange(range);
+          
+          // フィードバック（エラー）
+          const feedback = element.querySelector('.copy-feedback');
+          feedback.textContent = 'テキストを選択しました';
+          feedback.classList.add('show');
+          
+          setTimeout(() => {
+            feedback.classList.remove('show');
+            feedback.textContent = 'コピーしました!';
+            selection.removeAllRanges();
+          }, 1500);
+        }
+      }
 
       // ページ読み込み
       handlePageLoad();
