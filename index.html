@@ -628,25 +628,44 @@
           searchResults.innerHTML =
             '<div class="loading">ユーザー情報を読み込み中...</div>';
 
-          const response = await fetch(
+          // ユーザー情報を取得
+          const userResponse = await fetch(
             `/api/users/${encodeURIComponent(userId)}`
           );
 
-          if (!response.ok) {
-            throw new Error(`HTTPエラー: ${response.status}`);
+          if (!userResponse.ok) {
+            throw new Error(`HTTPエラー: ${userResponse.status}`);
           }
 
-          const user = await response.json();
+          const user = await userResponse.json();
+          
+          // セッション情報を取得
+          let currentSession = null;
+          try {
+            const sessionResponse = await fetch('https://api.resonite.com/sessions?minActiveUsers=1&includeEmptyHeadless=false');
+            if (sessionResponse.ok) {
+              const sessions = await sessionResponse.json();
+              // ユーザーが参加しているセッションを検索
+              currentSession = sessions.find(session => 
+                session.sessionUsers && session.sessionUsers.some(sessionUser => 
+                  sessionUser.userID === userId && sessionUser.isPresent
+                )
+              );
+            }
+          } catch (sessionError) {
+            console.warn('セッション情報の取得に失敗しました:', sessionError);
+          }
+          
           currentUser = user;
           currentView = "detail";
-          displayUserDetail(user);
+          displayUserDetail(user, currentSession);
         } catch (error) {
           searchResults.innerHTML = `<div class="error">エラーが発生しました: ${error.message}</div>`;
         }
       }
 
       // ユーザー詳細表示
-      function displayUserDetail(user) {
+      function displayUserDetail(user, currentSession = null) {
         const registrationDate = new Date(
           user.registrationDate
         ).toLocaleDateString("ja-JP");
@@ -724,6 +743,34 @@
                         `
                             : ""
                         }
+                        
+                        ${currentSession ? `
+                            <div class="detail-section">
+                                <h3>現在のセッション</h3>
+                                <div class="detail-item">
+                                    <span class="detail-label">セッション名</span>
+                                    <span class="detail-value">${currentSession.name.replace(/<[^>]*>/g, '')}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">ホスト</span>
+                                    <span class="detail-value">${currentSession.hostUsername}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">参加者数</span>
+                                    <span class="detail-value">${currentSession.activeUsers}/${currentSession.maxUsers}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">アクセスレベル</span>
+                                    <span class="detail-value">${currentSession.accessLevel}</span>
+                                </div>
+                                ${currentSession.thumbnailUrl ? `
+                                    <div class="detail-item">
+                                        <span class="detail-label">サムネイル</span>
+                                        <img src="${currentSession.thumbnailUrl}" alt="セッションサムネイル" style="max-width: 200px; border-radius: 5px; margin-top: 5px;">
+                                    </div>
+                                ` : ''}
+                            </div>
+                        ` : ''}
                     </div>
                 </div>
             `;
