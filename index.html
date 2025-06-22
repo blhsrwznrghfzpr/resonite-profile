@@ -593,13 +593,17 @@
                                     ${user.tags
                                       .map((tag) => {
                                         const iconUrl = getTagIcon(tag);
-                                        const displayName = tag.startsWith('custom badge:') ? 'custom badge' : tag;
+                                        const displayName = tag.startsWith(
+                                          "custom badge:"
+                                        )
+                                          ? "custom badge"
+                                          : tag;
                                         return iconUrl
                                           ? `<img class="tag-icon" src="${iconUrl}" alt="${displayName}" title="${displayName}" onerror="this.style.display='none'">`
                                           : "";
                                       })
                                       .filter(Boolean)
-                                      .join("")
+                                      .join("")}
                                 </div>
                             `
                                 : ""
@@ -639,24 +643,27 @@
           }
 
           const user = await userResponse.json();
-          
+
           // セッション情報を取得
           let currentSession = null;
           try {
-            const sessionResponse = await fetch('/api/sessions');
+            const sessionResponse = await fetch("/api/sessions");
             if (sessionResponse.ok) {
               const sessions = await sessionResponse.json();
               // ユーザーが参加しているセッションを検索
-              currentSession = sessions.find(session => 
-                session.sessionUsers && session.sessionUsers.some(sessionUser => 
-                  sessionUser.userID === userId && sessionUser.isPresent
-                )
+              currentSession = sessions.find(
+                (session) =>
+                  session.sessionUsers &&
+                  session.sessionUsers.some(
+                    (sessionUser) =>
+                      sessionUser.userID === userId && sessionUser.isPresent
+                  )
               );
             }
           } catch (sessionError) {
-            console.warn('セッション情報の取得に失敗しました:', sessionError);
+            console.warn("セッション情報の取得に失敗しました:", sessionError);
           }
-          
+
           currentUser = user;
           currentView = "detail";
           displayUserDetail(user, currentSession);
@@ -729,7 +736,11 @@
                                     ${user.tags
                                       .map((tag) => {
                                         const iconUrl = getTagIcon(tag);
-                                        const displayName = tag.startsWith('custom badge:') ? 'custom badge' : tag;
+                                        const displayName = tag.startsWith(
+                                          "custom badge:"
+                                        )
+                                          ? "custom badge"
+                                          : tag;
                                         return `<span class="tag">
                                             ${
                                               iconUrl
@@ -746,19 +757,32 @@
                             : ""
                         }
                         
-                        ${currentSession ? `
+                        ${
+                          currentSession
+                            ? `
                             <div class="detail-section">
                                 <h3>現在のセッション</h3>
-                                <a href="https://go.resonite.com/session/${currentSession.sessionId}" target="_blank" style="text-decoration: none; color: inherit;">
+                                <a href="https://go.resonite.com/session/${
+                                  currentSession.sessionId
+                                }" target="_blank" style="text-decoration: none; color: inherit;">
                                     <div class="detail-item" style="flex-direction: column; align-items: flex-start; padding: 10px; border: 1px solid #e9ecef; border-radius: 8px; cursor: pointer; transition: background-color 0.2s ease;">
-                                        <span class="detail-value" style="font-weight: 500; margin-bottom: 10px; color: #333;">${currentSession.name.replace(/<[^>]*>/g, '')}</span>
-                                        ${currentSession.thumbnailUrl ? `
+                                        <span class="detail-value" style="font-weight: 500; margin-bottom: 10px; color: #333;">${currentSession.name.replace(
+                                          /<[^>]*>/g,
+                                          ""
+                                        )}</span>
+                                        ${
+                                          currentSession.thumbnailUrl
+                                            ? `
                                             <img src="${currentSession.thumbnailUrl}" alt="セッションサムネイル" style="max-width: 100%; border-radius: 5px;">
-                                        ` : ''}
+                                        `
+                                            : ""
+                                        }
                                     </div>
                                 </a>
                             </div>
-                        ` : ''}
+                        `
+                            : ""
+                        }
                     </div>
                 </div>
             `;
