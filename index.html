@@ -642,7 +642,7 @@
           // セッション情報を取得
           let currentSession = null;
           try {
-            const sessionResponse = await fetch('https://api.resonite.com/sessions?minActiveUsers=1&includeEmptyHeadless=false');
+            const sessionResponse = await fetch('/api/sessions');
             if (sessionResponse.ok) {
               const sessions = await sessionResponse.json();
               // ユーザーが参加しているセッションを検索
