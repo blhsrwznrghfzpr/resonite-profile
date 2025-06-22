@@ -421,7 +421,7 @@
       // resdb URLをassets.resonite.comに変換
       function convertIconUrl(iconUrl) {
         if (!iconUrl)
-          return "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiByeD0iNDAiIGZpbGw9IiNlOWVjZWYiLz4KPHN2ZyB4PSIyMCIgeT0iMjAiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjNjY3ZWVhIj4KPHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+CjxwYXRoIGQ9Ik0yMCAyMXYtMmE0IDQgMCAwIDAtNC00SDhhNCA0IDAgMCAwLTQgNHYyIi8+CjxjaXJjbGUgY3g9IjEyIiBjeT0iNyIgcj0iNCIvPgo8L3N2Zz4KPHN2Zz4=";
+          return "https://assets.resonite.com/9adc7bf85f005413174dbb26c1ef3f62b6ce9e1abbbaf5b504d490b872107373";
 
         if (iconUrl.startsWith("resdb:///")) {
           const filename = iconUrl.replace("resdb:///", "");
@@ -493,6 +493,24 @@
           "75ec4f48e39fe6534cda057f902f001a1418c3236b70c549d024b932e521f7bd",
         "mmc25 other":
           "48128da7c22307323877a022e7f18f529d51b040fadb625b5a555738e89d7b2d",
+        potato:
+          "9e2df387f7ab288486d5abd8ebb760d87872227a47779c897593c263f27b1f8e",
+        "mmc24 honorable mention":
+          "2e919e40ca369653c8b35bd4609d506d2d9cbd73401e0cc9d0b7c895e533bb3e",
+        "mmc24 art":
+          "276dfbd2513263e54281f32831196b93b4ac7d4a1837e419261f6b589c6e098a",
+        "mmc24 avatar":
+          "75ec4f48e39fe6534cda057f902f001a1418c3236b70c549d024b932e521f7bd",
+        "mmc24 world":
+          "9d56330c331f653f8b6f6503d5e2d9bf7ff62f548d968323b66076fe7e99b87f",
+        "halloween24 winner":
+          "ea3e4281b20e3250bb58d6e26505c6272d006714c4c78945367f146a97851a9c",
+        "unifesta 2024 ambassador":
+          "b50d3e85bee612408dd17afc58a2b99f3785599984dc796bbf82d35889eca483",
+        "mmc25 honorable mention":
+          "a8a29408b5453c22c0263d76020a49b3305511d469731e5ca51178b7ddff5acb",
+        "mmc25 other":
+          "48128da7c22307323877a022e7f18f529d51b040fadb625b5a555738e89d7b2d",
       };
 
       function getTagIcon(tagName) {
@@ -549,7 +567,7 @@
                     <div class="user-header">
                         <img class="user-avatar" src="${convertIconUrl(
                           user.profile?.iconUrl
-                        )}" alt="Avatar" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiByeD0iNDAiIGZpbGw9IiNlOWVjZWYiLz4KPHN2ZyB4PSIyMCIgeT0iMjAiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjNjY3ZWVhIj4KPHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+CjxwYXRoIGQ9Ik0yMCAyMXYtMmE0IDQgMCAwIDAtNC00SDhhNCA0IDAgMCAwLTQgNHYyIi8+CjxjaXJjbGUgY3g9IjEyIiBjeT0iNyIgcj0iNCIvPgo8L3N2Zz4KPHN2Zz4='">
+                        )}" alt="Avatar" onerror="this.src='https://assets.resonite.com/9adc7bf85f005413174dbb26c1ef3f62b6ce9e1abbbaf5b504d490b872107373'">
                         <div class="user-basic">
                             <div class="username">${user.username}</div>
                             <div class="user-id">${user.id}</div>
@@ -631,7 +649,7 @@
                     <div class="user-header">
                         <img class="user-avatar" src="${convertIconUrl(
                           user.profile?.iconUrl
-                        )}" alt="Avatar" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiByeD0iNDAiIGZpbGw9IiNlOWVjZWYiLz4KPHN2ZyB4PSIyMCIgeT0iMjAiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjNjY3ZWVhIj4KPHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+CjxwYXRoIGQ9Ik0yMCAyMXYtMmE0IDQgMCAwIDAtNC00SDhhNCA0IDAgMCAwLTQgNHYyIi8+CjxjaXJjbGUgY3g9IjEyIiBjeT0iNyIgcj0iNCIvPgo8L3N2Zz4KPHN2Zz4='">
+                        )}" alt="Avatar" onerror="this.src='https://assets.resonite.com/9adc7bf85f005413174dbb26c1ef3f62b6ce9e1abbbaf5b504d490b872107373'">
                         <div class="user-basic">
                             <div class="username copyable" onclick="copyToClipboard('${
                               user.username
