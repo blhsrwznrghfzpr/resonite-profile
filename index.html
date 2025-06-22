@@ -747,28 +747,14 @@
                         ${currentSession ? `
                             <div class="detail-section">
                                 <h3>現在のセッション</h3>
-                                <div class="detail-item">
-                                    <span class="detail-label">セッション名</span>
-                                    <span class="detail-value">${currentSession.name.replace(/<[^>]*>/g, '')}</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">ホスト</span>
-                                    <span class="detail-value">${currentSession.hostUsername}</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">参加者数</span>
-                                    <span class="detail-value">${currentSession.activeUsers}/${currentSession.maxUsers}</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">アクセスレベル</span>
-                                    <span class="detail-value">${currentSession.accessLevel}</span>
-                                </div>
-                                ${currentSession.thumbnailUrl ? `
-                                    <div class="detail-item">
-                                        <span class="detail-label">サムネイル</span>
-                                        <img src="${currentSession.thumbnailUrl}" alt="セッションサムネイル" style="max-width: 200px; border-radius: 5px; margin-top: 5px;">
+                                <a href="https://go.resonite.com/session/${currentSession.sessionId}" target="_blank" style="text-decoration: none; color: inherit;">
+                                    <div class="detail-item" style="flex-direction: column; align-items: flex-start; padding: 10px; border: 1px solid #e9ecef; border-radius: 8px; cursor: pointer; transition: background-color 0.2s ease;">
+                                        <span class="detail-value" style="font-weight: 500; margin-bottom: 10px; color: #333;">${currentSession.name.replace(/<[^>]*>/g, '')}</span>
+                                        ${currentSession.thumbnailUrl ? `
+                                            <img src="${currentSession.thumbnailUrl}" alt="セッションサムネイル" style="max-width: 100%; border-radius: 5px;">
+                                        ` : ''}
                                     </div>
-                                ` : ''}
+                                </a>
                             </div>
                         ` : ''}
                     </div>
