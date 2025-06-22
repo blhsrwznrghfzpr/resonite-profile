@@ -593,12 +593,13 @@
                                     ${user.tags
                                       .map((tag) => {
                                         const iconUrl = getTagIcon(tag);
+                                        const displayName = tag.startsWith('custom badge:') ? 'custom badge' : tag;
                                         return iconUrl
-                                          ? `<img class="tag-icon" src="${iconUrl}" alt="${tag}" title="${tag}" onerror="this.style.display='none'">`
+                                          ? `<img class="tag-icon" src="${iconUrl}" alt="${displayName}" title="${displayName}" onerror="this.style.display='none'">`
                                           : "";
                                       })
                                       .filter(Boolean)
-                                      .join("")}
+                                      .join("")
                                 </div>
                             `
                                 : ""
@@ -728,13 +729,14 @@
                                     ${user.tags
                                       .map((tag) => {
                                         const iconUrl = getTagIcon(tag);
+                                        const displayName = tag.startsWith('custom badge:') ? 'custom badge' : tag;
                                         return `<span class="tag">
                                             ${
                                               iconUrl
                                                 ? `<img class="tag-icon" src="${iconUrl}" alt="${tag}" onerror="this.style.display='none'">`
                                                 : ""
                                             }
-                                            ${tag}
+                                            ${displayName}
                                         </span>`;
                                       })
                                       .join("")}
