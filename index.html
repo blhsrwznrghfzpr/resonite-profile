@@ -286,24 +286,24 @@
         body {
           padding: 10px;
         }
-        
+
         .container {
           margin: 0;
           border-radius: 10px;
         }
-        
+
         .header {
           padding: 20px;
         }
-        
+
         .header h1 {
           font-size: 1.8em;
         }
-        
+
         .search-section {
           padding: 20px;
         }
-        
+
         .search-form {
           flex-direction: column;
         }
@@ -319,50 +319,50 @@
           width: 60px;
           height: 60px;
         }
-        
+
         .user-info {
           margin: 10px 0;
           padding: 20px;
         }
-        
+
         .username {
           font-size: 1.4em;
         }
-        
+
         .user-id {
           font-size: 0.9em;
           word-break: break-all;
         }
-        
+
         .user-details {
           grid-template-columns: 1fr;
           gap: 15px;
         }
-        
+
         .detail-section {
           padding: 15px;
         }
-        
+
         .detail-item {
           flex-direction: column;
           align-items: flex-start;
           gap: 5px;
         }
-        
+
         .tags-container {
           gap: 3px;
         }
-        
+
         .tag {
           font-size: 0.7em;
           padding: 2px 6px;
         }
-        
+
         .tag-icon {
           width: 14px;
           height: 14px;
         }
-        
+
         .user-tags {
           gap: 3px;
         }
@@ -374,7 +374,21 @@
       <div class="header">
         <h1>Resonite ユーザー検索</h1>
         <p>Resoniteユーザーの情報を検索・表示できます</p>
-        <a href="https://github.com/blhsrwznrghfzpr/resonite-profile" target="_blank" style="display: inline-block; margin-top: 15px; padding: 10px 20px; background: rgba(255, 255, 255, 0.2); color: white; text-decoration: none; border-radius: 8px; font-weight: 500; transition: background 0.3s ease;">
+        <a
+          href="https://github.com/blhsrwznrghfzpr/resonite-profile"
+          target="_blank"
+          style="
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+          "
+        >
           GitHub で見る
         </a>
       </div>
@@ -459,15 +473,35 @@
           "6581e85267c27bc010d3362c2fc495c5466d204a93a45ec55a40132dc7b2ae3b",
         "mmc25 participant":
           "d18570e373b1b2ad96a0be5bd0e3b38632f40df61fa82e5ff6bb9fd534c0e98e",
+        "mmc25 honorable mention":
+          "a8a29408b5453c22c0263d76020a49b3305511d469731e5ca51178b7ddff5acb",
+        "mmc participant":
+          "a92e7d4fe39d70c5b60c7aacdd7ebaae9708f9bff7f7b3580166594361d9987d",
+        "neos festa 4 ambassador":
+          "23f645e2084a43d7c96fb1fd7cb9f732faa66baa703ac128f3796c974e3f5bb8",
+        "mmc23 other":
+          "5452873da954c2e76f153ecb4a7122855ec6c63c63e8a92a5a3bc684ae4aa053",
+        "mmc23 world":
+          "c8ba2e7f8eb8e017fd74ac9ac2f8a3f0cfe3c39bcd4e038fb7ef74200c40bf2e",
+        "mmc24 honorable mention":
+          "2e919e40ca369653c8b35bd4609d506d2d9cbd73401e0cc9d0b7c895e533bb3e",
+        translator:
+          "76152d6d2f7e125620ae7138c66a8d0408ebed45580bea727c6a673b325f2311",
+        "halloween24 participant":
+          "f31448d1140a687cbc7917e0a169ebcd2d7ea477f6bbc8853f576c9e43053d5a",
+        "mmc24 avatar":
+          "75ec4f48e39fe6534cda057f902f001a1418c3236b70c549d024b932e521f7bd",
+        "mmc25 other":
+          "48128da7c22307323877a022e7f18f529d51b040fadb625b5a555738e89d7b2d",
       };
 
       function getTagIcon(tagName) {
         // custom badge:xxxの特殊処理
-        if (tagName.startsWith('custom badge:')) {
-          const customBadgeId = tagName.replace('custom badge:', '');
+        if (tagName.startsWith("custom badge:")) {
+          const customBadgeId = tagName.replace("custom badge:", "");
           return `https://assets.resonite.com/${customBadgeId}`;
         }
-        
+
         // 通常のタグ画像
         const imageId = tagImages[tagName];
         return imageId ? `https://assets.resonite.com/${imageId}` : null;
@@ -599,11 +633,15 @@
                           user.profile?.iconUrl
                         )}" alt="Avatar" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiByeD0iNDAiIGZpbGw9IiNlOWVjZWYiLz4KPHN2ZyB4PSIyMCIgeT0iMjAiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjNjY3ZWVhIj4KPHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+CjxwYXRoIGQ9Ik0yMCAyMXYtMmE0IDQgMCAwIDAtNC00SDhhNCA0IDAgMCAwLTQgNHYyIi8+CjxjaXJjbGUgY3g9IjEyIiBjeT0iNyIgcj0iNCIvPgo8L3N2Zz4KPHN2Zz4='">
                         <div class="user-basic">
-                            <div class="username copyable" onclick="copyToClipboard('${user.username}', this)">
+                            <div class="username copyable" onclick="copyToClipboard('${
+                              user.username
+                            }', this)">
                                 ${user.username}
                                 <div class="copy-feedback">コピーしました!</div>
                             </div>
-                            <div class="user-id copyable" onclick="copyToClipboard('${user.id}', this)">
+                            <div class="user-id copyable" onclick="copyToClipboard('${
+                              user.id
+                            }', this)">
                                 ${user.id}
                                 <div class="copy-feedback">コピーしました!</div>
                             </div>
@@ -633,7 +671,7 @@
                           user.tags && user.tags.length > 0
                             ? `
                             <div class="detail-section">
-                                <h3>タグ</h3>
+                                <h3>バッジ</h3>
                                 <div class="tags-container">
                                     ${user.tags
                                       .map((tag) => {
@@ -707,32 +745,32 @@
       async function copyToClipboard(text, element) {
         try {
           await navigator.clipboard.writeText(text);
-          
+
           // フィードバック表示
-          const feedback = element.querySelector('.copy-feedback');
-          feedback.classList.add('show');
-          
+          const feedback = element.querySelector(".copy-feedback");
+          feedback.classList.add("show");
+
           setTimeout(() => {
-            feedback.classList.remove('show');
+            feedback.classList.remove("show");
           }, 1500);
         } catch (err) {
-          console.error('コピーに失敗しました:', err);
-          
+          console.error("コピーに失敗しました:", err);
+
           // フォールバック: 選択状態にする
           const range = document.createRange();
           range.selectNodeContents(element);
           const selection = window.getSelection();
           selection.removeAllRanges();
           selection.addRange(range);
-          
+
           // フィードバック（エラー）
-          const feedback = element.querySelector('.copy-feedback');
-          feedback.textContent = 'テキストを選択しました';
-          feedback.classList.add('show');
-          
+          const feedback = element.querySelector(".copy-feedback");
+          feedback.textContent = "テキストを選択しました";
+          feedback.classList.add("show");
+
           setTimeout(() => {
-            feedback.classList.remove('show');
-            feedback.textContent = 'コピーしました!';
+            feedback.classList.remove("show");
+            feedback.textContent = "コピーしました!";
             selection.removeAllRanges();
           }, 1500);
         }
