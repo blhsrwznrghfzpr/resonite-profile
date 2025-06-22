@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Resonite ユーザー検索</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+      }
+
+      .header h1 {
+        font-size: 2.5em;
+        margin-bottom: 10px;
+      }
+
+      .header p {
+        font-size: 1.1em;
+        opacity: 0.9;
+      }
+
+      .search-section {
+        padding: 40px;
+        background: #f8f9fa;
+      }
+
+      .search-form {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+
+      .search-input {
+        flex: 1;
+        padding: 15px 20px;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        font-size: 1em;
+        transition: border-color 0.3s ease;
+      }
+
+      .search-input:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+
+      .search-btn {
+        padding: 15px 30px;
+        background: #667eea;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 1em;
+        font-weight: 500;
+        transition: background 0.3s ease;
+      }
+
+      .search-btn:hover {
+        background: #5a67d8;
+      }
+
+      .search-btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+
+      .loading {
+        text-align: center;
+        padding: 20px;
+        color: #667eea;
+        font-size: 1.1em;
+      }
+
+      .error {
+        background: #f8d7da;
+        color: #721c24;
+        padding: 15px;
+        border-radius: 10px;
+        margin: 20px 0;
+      }
+
+      .user-info {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        margin: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      }
+
+      .user-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 25px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #e9ecef;
+      }
+
+      .user-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        margin-right: 20px;
+        border: 3px solid #667eea;
+      }
+
+      .user-basic {
+        flex: 1;
+      }
+
+      .username {
+        font-size: 1.8em;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 5px;
+      }
+
+      .user-id {
+        color: #666;
+        font-size: 1em;
+      }
+
+      .badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 15px;
+      }
+
+      .badge {
+        background: #667eea;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 15px;
+        font-size: 0.8em;
+        font-weight: 500;
+      }
+
+      .verified {
+        background: #28a745;
+      }
+
+      .supporter {
+        background: #ffc107;
+        color: #212529;
+      }
+
+      .user-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 25px;
+        margin-top: 25px;
+      }
+
+      .detail-section {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+      }
+
+      .detail-section h3 {
+        color: #333;
+        margin-bottom: 15px;
+        font-size: 1.3em;
+      }
+
+      .detail-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        padding: 8px 0;
+        border-bottom: 1px solid #e9ecef;
+      }
+
+      .detail-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+      }
+
+      .detail-label {
+        font-weight: 500;
+        color: #666;
+      }
+
+      .detail-value {
+        color: #333;
+        font-weight: 500;
+      }
+
+      .tags-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        margin-top: 10px;
+      }
+
+      .tag {
+        background: #e9ecef;
+        color: #495057;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 0.8em;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .tag-icon {
+        width: 16px;
+        height: 16px;
+        border-radius: 3px;
+      }
+
+      .user-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        margin-top: 10px;
+      }
+
+      .no-results {
+        text-align: center;
+        padding: 40px;
+        color: #666;
+        font-size: 1.1em;
+      }
+
+      @media (max-width: 768px) {
+        body {
+          padding: 10px;
+        }
+        
+        .container {
+          margin: 0;
+          border-radius: 10px;
+        }
+        
+        .header {
+          padding: 20px;
+        }
+        
+        .header h1 {
+          font-size: 1.8em;
+        }
+        
+        .search-section {
+          padding: 20px;
+        }
+        
+        .search-form {
+          flex-direction: column;
+        }
+
+        .user-header {
+          flex-direction: column;
+          text-align: center;
+        }
+
+        .user-avatar {
+          margin-right: 0;
+          margin-bottom: 15px;
+          width: 60px;
+          height: 60px;
+        }
+        
+        .user-info {
+          margin: 10px 0;
+          padding: 20px;
+        }
+        
+        .username {
+          font-size: 1.4em;
+        }
+        
+        .user-id {
+          font-size: 0.9em;
+          word-break: break-all;
+        }
+        
+        .user-details {
+          grid-template-columns: 1fr;
+          gap: 15px;
+        }
+        
+        .detail-section {
+          padding: 15px;
+        }
+        
+        .detail-item {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 5px;
+        }
+        
+        .tags-container {
+          gap: 3px;
+        }
+        
+        .tag {
+          font-size: 0.7em;
+          padding: 2px 6px;
+        }
+        
+        .tag-icon {
+          width: 14px;
+          height: 14px;
+        }
+        
+        .user-tags {
+          gap: 3px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Resonite ユーザー検索</h1>
+        <p>Resoniteユーザーの情報を検索・表示できます</p>
+      </div>
+
+      <div class="search-section">
+        <div class="search-form">
+          <input
+            type="text"
+            class="search-input"
+            id="searchInput"
+            placeholder="ユーザー名を入力してください"
+          />
+          <button class="search-btn" id="searchBtn">検索</button>
+        </div>
+
+        <div id="searchResults"></div>
+      </div>
+    </div>
+
+    <script>
+      const API_BASE = "/api/users";
+
+      const searchInput = document.getElementById("searchInput");
+      const searchBtn = document.getElementById("searchBtn");
+      const searchResults = document.getElementById("searchResults");
+
+      let currentView = "search"; // 'search' or 'detail'
+      let currentUser = null;
+
+      // resdb URLをassets.resonite.comに変換
+      function convertIconUrl(iconUrl) {
+        if (!iconUrl)
+          return "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiByeD0iNDAiIGZpbGw9IiNlOWVjZWYiLz4KPHN2ZyB4PSIyMCIgeT0iMjAiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjNjY3ZWVhIj4KPHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+CjxwYXRoIGQ9Ik0yMCAyMXYtMmE0IDQgMCAwIDAtNC00SDhhNCA0IDAgMCAwLTQgNHYyIi8+CjxjaXJjbGUgY3g9IjEyIiBjeT0iNyIgcj0iNCIvPgo8L3N2Zz4KPHN2Zz4=";
+
+        if (iconUrl.startsWith("resdb:///")) {
+          const filename = iconUrl.replace("resdb:///", "");
+          const filenameWithoutExt = filename.replace(/\.[^/.]+$/, "");
+          return `https://assets.resonite.com/${filenameWithoutExt}`;
+        }
+
+        return iconUrl;
+      }
+
+      // タグ画像を取得（後から設定可能）
+      const tagImages = {
+        // タグ名: 画像URL のマッピングをここに追加
+        "neos festa 3 participant":
+          "db19e650645cc15516a4e95f02253e3aefd7bd2a9ffeb838d95a08d9eb4334f1",
+        "mmc21 participant":
+          "167ad55acbebbbcd0b89a616f426bc59bdd73e3afe59c524a51722fde9fef597",
+        "mmc21 world:game 3rd":
+          "ad8c4e15698f3314e1de873793d8dcecd4a4eb24cb15d329c9075a1a9de1b8b8",
+        "mmc21 avatar:misc 1st":
+          "4b7e7417c0f183439ea4220391bf7278ea85942cacd3b4d80304e0bc765231b9",
+        "mmc22 participant":
+          "ebd3c882ec12805b293199f0c5e0d77c7333b524b205f668b65d80aa51c944c8",
+        "mmc22 avatar:misc":
+          "8ee814db1f0107b127a02f8c22536cd6d0dfb767b88ad6295f392e54d49dce21",
+        "mmc22 avatar":
+          "8ee814db1f0107b127a02f8c22536cd6d0dfb767b88ad6295f392e54d49dce21",
+        "neos festa 4 participant":
+          "b3e14476da9ee56a2bfd618e3281b7314999797ba654eabb0588852ee1ef04aa",
+        "mmc23 gifty":
+          "1f0b7d8dfff68b8df0e2536103ca54318eac4f822b1e8811ee477c57afc3c010",
+        "mmc23 participant":
+          "89c544d236ae061dc58e246dd600f0cad5ef4d492393fb65f69c2c9f7e9a2fbe",
+        "mmc23 honorable mention":
+          "82657b927af6ff7cb944d83d19d8e8eff72574642735378fe39dd3b1cf38515f",
+        mentor:
+          "b765be132f8ddce120665b531ce8874fd2034529103ca72b0de9dfa896dfc9fc",
+        "mmc24 gifty":
+          "8c68241754813bf4b41ad5db0b38e94a5ca524964caba4a888d69745ddc1689f",
+        "mmc24 participant":
+          "00dd00f8b8c4d62f27934acb20ea8c2ea852d2f75fcfe16de0ce8b2643cfa6de",
+        "unifesta 2023":
+          "b3e14476da9ee56a2bfd618e3281b7314999797ba654eabb0588852ee1ef04aa",
+        "vket24 participant":
+          "c5c2029730efdf65b1eeed61dcc40103b16d10c2c42b76226593dd77b8dd193e",
+        "unifesta 2024 participant":
+          "0a2665175e528c1887bff6b63c2729a64cdf37a7ffedef2784feba41af1999be",
+        "mmc25 gifty":
+          "6581e85267c27bc010d3362c2fc495c5466d204a93a45ec55a40132dc7b2ae3b",
+        "mmc25 participant":
+          "d18570e373b1b2ad96a0be5bd0e3b38632f40df61fa82e5ff6bb9fd534c0e98e",
+      };
+
+      function getTagIcon(tagName) {
+        // custom badge:xxxの特殊処理
+        if (tagName.startsWith('custom badge:')) {
+          const customBadgeId = tagName.replace('custom badge:', '');
+          return `https://assets.resonite.com/${customBadgeId}`;
+        }
+        
+        // 通常のタグ画像
+        const imageId = tagImages[tagName];
+        return imageId ? `https://assets.resonite.com/${imageId}` : null;
+      }
+
+      // 検索実行
+      async function performSearch() {
+        const query = searchInput.value.trim();
+        if (!query) return;
+
+        searchBtn.disabled = true;
+        searchResults.innerHTML = '<div class="loading">検索中...</div>';
+
+        try {
+          const url = `${API_BASE}?name=${encodeURIComponent(query)}`;
+          const response = await fetch(url);
+
+          if (!response.ok) {
+            throw new Error(`HTTPエラー: ${response.status}`);
+          }
+
+          const data = await response.json();
+          displaySearchResults(data);
+        } catch (error) {
+          searchResults.innerHTML = `<div class="error">エラーが発生しました: ${error.message}</div>`;
+        } finally {
+          searchBtn.disabled = false;
+        }
+      }
+
+      // 検索結果表示（ユーザー名検索）
+      function displaySearchResults(users) {
+        if (!users || users.length === 0) {
+          searchResults.innerHTML =
+            '<div class="no-results">ユーザーが見つかりませんでした</div>';
+          return;
+        }
+
+        const resultsHtml = users
+          .map(
+            (user) => `
+                <div class="user-info" onclick="showUserDetail('${
+                  user.id
+                }')" style="cursor: pointer;">
+                    <div class="user-header">
+                        <img class="user-avatar" src="${convertIconUrl(
+                          user.profile?.iconUrl
+                        )}" alt="Avatar" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiByeD0iNDAiIGZpbGw9IiNlOWVjZWYiLz4KPHN2ZyB4PSIyMCIgeT0iMjAiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjNjY3ZWVhIj4KPHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+CjxwYXRoIGQ9Ik0yMCAyMXYtMmE0IDQgMCAwIDAtNC00SDhhNCA0IDAgMCAwLTQgNHYyIi8+CjxjaXJjbGUgY3g9IjEyIiBjeT0iNyIgcj0iNCIvPgo8L3N2Zz4KPHN2Zz4='">
+                        <div class="user-basic">
+                            <div class="username">${user.username}</div>
+                            <div class="user-id">${user.id}</div>
+                            ${
+                              user.tags && user.tags.length > 0
+                                ? `
+                                <div class="user-tags">
+                                    ${user.tags
+                                      .map((tag) => {
+                                        const iconUrl = getTagIcon(tag);
+                                        return iconUrl
+                                          ? `<img class="tag-icon" src="${iconUrl}" alt="${tag}" title="${tag}" onerror="this.style.display='none'">`
+                                          : "";
+                                      })
+                                      .filter(Boolean)
+                                      .join("")}
+                                </div>
+                            `
+                                : ""
+                            }
+                        </div>
+                    </div>
+                </div>
+            `
+          )
+          .join("");
+
+        searchResults.innerHTML = resultsHtml;
+      }
+
+      // イベントリスナー
+      searchBtn.addEventListener("click", performSearch);
+      searchInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+          performSearch();
+        }
+      });
+
+      // ユーザー詳細を表示
+      async function showUserDetail(userId) {
+        try {
+          history.pushState({ userId }, "", `/user/${userId}`);
+          searchResults.innerHTML =
+            '<div class="loading">ユーザー情報を読み込み中...</div>';
+
+          const response = await fetch(
+            `/api/users/${encodeURIComponent(userId)}`
+          );
+
+          if (!response.ok) {
+            throw new Error(`HTTPエラー: ${response.status}`);
+          }
+
+          const user = await response.json();
+          currentUser = user;
+          currentView = "detail";
+          displayUserDetail(user);
+        } catch (error) {
+          searchResults.innerHTML = `<div class="error">エラーが発生しました: ${error.message}</div>`;
+        }
+      }
+
+      // ユーザー詳細表示
+      function displayUserDetail(user) {
+        const registrationDate = new Date(
+          user.registrationDate
+        ).toLocaleDateString("ja-JP");
+        const migratedDate = user.migratedData
+          ? new Date(user.migratedData.registrationDate).toLocaleDateString(
+              "ja-JP"
+            )
+          : null;
+
+        const userHtml = `
+                <div class="user-info">
+                    <div style="margin-bottom: 20px;">
+                        <button onclick="goBack()" style="background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">← 検索に戻る</button>
+                    </div>
+                    <div class="user-header">
+                        <img class="user-avatar" src="${convertIconUrl(
+                          user.profile?.iconUrl
+                        )}" alt="Avatar" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiByeD0iNDAiIGZpbGw9IiNlOWVjZWYiLz4KPHN2ZyB4PSIyMCIgeT0iMjAiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjNjY3ZWVhIj4KPHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+CjxwYXRoIGQ9Ik0yMCAyMXYtMmE0IDQgMCAwIDAtNC00SDhhNCA0IDAgMCAwLTQgNHYyIi8+CjxjaXJjbGUgY3g9IjEyIiBjeT0iNyIgcj0iNCIvPgo8L3N2Zz4KPHN2Zz4='">
+                        <div class="user-basic">
+                            <div class="username">${user.username}</div>
+                            <div class="user-id">${user.id}</div>
+                        </div>
+                    </div>
+
+                    <div class="user-details">
+                        <div class="detail-section">
+                            <h3>基本情報</h3>
+                            <div class="detail-item">
+                                <span class="detail-label">登録日</span>
+                                <span class="detail-value">${registrationDate}</span>
+                            </div>
+                            ${
+                              migratedDate
+                                ? `
+                                <div class="detail-item">
+                                    <span class="detail-label">移行前登録日</span>
+                                    <span class="detail-value">${migratedDate}</span>
+                                </div>
+                            `
+                                : ""
+                            }
+                        </div>
+
+                        ${
+                          user.tags && user.tags.length > 0
+                            ? `
+                            <div class="detail-section">
+                                <h3>タグ</h3>
+                                <div class="tags-container">
+                                    ${user.tags
+                                      .map((tag) => {
+                                        const iconUrl = getTagIcon(tag);
+                                        return `<span class="tag">
+                                            ${
+                                              iconUrl
+                                                ? `<img class="tag-icon" src="${iconUrl}" alt="${tag}" onerror="this.style.display='none'">`
+                                                : ""
+                                            }
+                                            ${tag}
+                                        </span>`;
+                                      })
+                                      .join("")}
+                                </div>
+                            </div>
+                        `
+                            : ""
+                        }
+                    </div>
+                </div>
+            `;
+
+        searchResults.innerHTML = userHtml;
+      }
+
+      // 戻るボタン
+      function goBack() {
+        history.pushState({}, "", "/");
+        currentView = "search";
+        currentUser = null;
+        searchResults.innerHTML = "";
+      }
+
+      // バイト数フォーマット
+      function formatBytes(bytes) {
+        if (bytes === 0) return "0 Bytes";
+        const k = 1024;
+        const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+      }
+
+      // ページ読み込み時の処理
+      function handlePageLoad() {
+        const path = window.location.pathname;
+        if (path.startsWith("/user/")) {
+          const userId = path.replace("/user/", "");
+          if (userId) {
+            showUserDetail(userId);
+            return;
+          }
+        }
+
+        // 初期フォーカス
+        searchInput.focus();
+      }
+
+      // ブラウザの戻る/進むボタン対応
+      window.addEventListener("popstate", (event) => {
+        if (event.state && event.state.userId) {
+          showUserDetail(event.state.userId);
+        } else {
+          currentView = "search";
+          currentUser = null;
+          searchResults.innerHTML = "";
+        }
+      });
+
+      // ページ読み込み
+      handlePageLoad();
+    </script>
+  </body>
+</html>
