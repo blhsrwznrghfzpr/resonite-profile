@@ -740,7 +740,7 @@
                         }
                     </div>
 
-                    <div class="user-details">
+                    <div class="user-details" style="display: flex; flex-direction: column; gap: 20px;">
                         ${
                           user.tags && user.tags.length > 0
                             ? `
@@ -827,21 +827,25 @@
           return;
         }
 
-        const worldsHtml = worlds.map(world => {
-          const thumbnailUrl = world.thumbnailUrl ? convertIconUrl(world.thumbnailUrl) : 'https://assets.resonite.com/9adc7bf85f005413174dbb26c1ef3f62b6ce9e1abbbaf5b504d490b872107373';
-          const publishDate = new Date(world.firstPublishTime).toLocaleDateString('ja-JP');
-          
-          return `
-            <div class="world-item" style="border: 1px solid #e9ecef; border-radius: 8px; padding: 12px; margin-bottom: 10px; display: flex; gap: 12px;">
-              <img src="${thumbnailUrl}" alt="${world.name}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 6px; flex-shrink: 0;" onerror="this.src='https://assets.resonite.com/9adc7bf85f005413174dbb26c1ef3f62b6ce9e1abbbaf5b504d490b872107373'">
-              <div style="flex: 1; min-width: 0;">
-                <div style="font-weight: 500; color: #333; margin-bottom: 4px; word-break: break-word;">${world.name}</div>
-                <div style="font-size: 0.9em; color: #666; margin-bottom: 4px;">公開日: ${publishDate}</div>
-                ${world.description ? `<div style="font-size: 0.85em; color: #888; word-break: break-word;">${world.description}</div>` : ''}
-              </div>
-            </div>
-          `;
-        }).join('');
+        const worldsHtml = `
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px;">
+            ${worlds.map(world => {
+              const thumbnailUrl = world.thumbnailUrl ? convertIconUrl(world.thumbnailUrl) : 'https://assets.resonite.com/9adc7bf85f005413174dbb26c1ef3f62b6ce9e1abbbaf5b504d490b872107373';
+              const publishDate = new Date(world.firstPublishTime).toLocaleDateString('ja-JP');
+              
+              return `
+                <div class="world-item" style="border: 1px solid #e9ecef; border-radius: 8px; padding: 12px; display: flex; gap: 12px;">
+                  <img src="${thumbnailUrl}" alt="${world.name}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 6px; flex-shrink: 0;" onerror="this.src='https://assets.resonite.com/9adc7bf85f005413174dbb26c1ef3f62b6ce9e1abbbaf5b504d490b872107373'">
+                  <div style="flex: 1; min-width: 0;">
+                    <div style="font-weight: 500; color: #333; margin-bottom: 4px; word-break: break-word;">${world.name}</div>
+                    <div style="font-size: 0.9em; color: #666; margin-bottom: 4px;">公開日: ${publishDate}</div>
+                    ${world.description ? `<div style="font-size: 0.85em; color: #888; word-break: break-word;">${world.description}</div>` : ''}
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        `;
 
         worldsContainer.innerHTML = worldsHtml;
       }
