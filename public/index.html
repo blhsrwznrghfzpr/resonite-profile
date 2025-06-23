@@ -807,34 +807,6 @@
           .trim();
       }
 
-      // HTMLサニタイズ関数
-      function sanitizeHTML(html) {
-        if (!html) return '';
-        // 基本的なサニタイズ - 許可されたタグのみを通す
-        const allowedTags = ['span', 'strong', 'em', 'u'];
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = html;
-        
-        // 許可されていないタグを削除
-        const allElements = tempDiv.getElementsByTagName('*');
-        for (let i = allElements.length - 1; i >= 0; i--) {
-          const element = allElements[i];
-          if (!allowedTags.includes(element.tagName.toLowerCase())) {
-            element.parentNode.removeChild(element);
-          }
-        }
-        
-        return tempDiv.innerHTML;
-      }
-
-      // カラータグをHTMLに変換
-      function preProcessName(name) {
-        if (!name) return '';
-        const start = /<color="?(.+?)"?>/gi;
-        const end = /<\/color>/gi;
-        var styleTags = name.replace(start, "<span style=\"color: $1;\">").replace(end, "</span>");
-        return sanitizeHTML(styleTags);
-      }
 
       // ユーザーのワールドを読み込み
       async function loadUserWorlds(userId) {
@@ -882,7 +854,7 @@
             ${worlds.map(world => {
               const thumbnailUrl = world.thumbnailUri ? convertIconUrl(world.thumbnailUri) : 'https://assets.resonite.com/9adc7bf85f005413174dbb26c1ef3f62b6ce9e1abbbaf5b504d490b872107373';
               const publishDate = new Date(world.firstPublishTime).toLocaleDateString('ja-JP');
-              const worldName = truncateText(preProcessName(world.name), 60);
+              const worldName = truncateText(stripAllTags(world.name), 60);
               const worldDescription = world.description ? truncateText(stripAllTags(world.description), 120) : '';
               const worldUrl = `https://go.resonite.com/world/${world.ownerId}/${world.id}`;
               
