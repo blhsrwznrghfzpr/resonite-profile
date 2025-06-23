@@ -132,6 +132,9 @@
 
       .user-basic {
         flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
       }
 
       .username {
@@ -152,26 +155,44 @@
         transition: background-color 0.2s ease;
         padding: 2px 4px;
         border-radius: 4px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        width: fit-content;
       }
 
       .copyable:hover {
         background-color: rgba(102, 126, 234, 0.1);
       }
 
+      .copy-icon {
+        width: 16px;
+        height: 16px;
+        opacity: 0.6;
+        transition: opacity 0.2s ease;
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+
+      .copyable:hover .copy-icon {
+        opacity: 1;
+      }
+
       .copy-feedback {
         position: absolute;
-        top: -30px;
-        left: 50%;
-        transform: translateX(-50%);
+        top: -35px;
+        left: 0;
         background: #28a745;
         color: white;
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 0.8em;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 0.85em;
         z-index: 1000;
         opacity: 0;
         pointer-events: none;
         transition: opacity 0.3s ease;
+        white-space: nowrap;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
       }
 
       .copy-feedback.show {
@@ -584,8 +605,20 @@
                           user.profile?.iconUrl
                         )}" alt="Avatar" onerror="this.src='https://assets.resonite.com/9adc7bf85f005413174dbb26c1ef3f62b6ce9e1abbbaf5b504d490b872107373'">
                         <div class="user-basic">
-                            <div class="username">${user.username}</div>
-                            <div class="user-id">${user.id}</div>
+                            <div class="username copyable" onclick="event.stopPropagation(); copyToClipboard('${user.username}', this)">
+                                ${user.username}
+                                <svg class="copy-icon" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                                </svg>
+                                <div class="copy-feedback">コピーしました!</div>
+                            </div>
+                            <div class="user-id copyable" onclick="event.stopPropagation(); copyToClipboard('${user.id}', this)">
+                                ${user.id}
+                                <svg class="copy-icon" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                                </svg>
+                                <div class="copy-feedback">コピーしました!</div>
+                            </div>
                             ${
                               user.tags && user.tags.length > 0
                                 ? `
@@ -698,12 +731,18 @@
                                   user.username
                                 }', this)">
                                     ${user.username}
+                                    <svg class="copy-icon" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                                    </svg>
                                     <div class="copy-feedback">コピーしました!</div>
                                 </div>
                                 <div class="user-id copyable" onclick="copyToClipboard('${
                                   user.id
                                 }', this)">
                                     ${user.id}
+                                    <svg class="copy-icon" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                                    </svg>
                                     <div class="copy-feedback">コピーしました!</div>
                                 </div>
                                 <div class="user-dates" style="font-size: 0.9em; color: #666; margin-top: 8px;">
