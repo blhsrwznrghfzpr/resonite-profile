@@ -407,12 +407,6 @@
         word-break: break-word;
         line-height: 1.3;
         font-size: 1em;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        max-height: 2.6em;
       }
 
       .world-date {
@@ -428,14 +422,16 @@
         font-size: 0.8em;
         color: #888;
         word-break: break-word;
+        word-wrap: break-word;
         line-height: 1.4;
         flex: 1;
         overflow: hidden;
         text-overflow: ellipsis;
         display: -webkit-box;
-        -webkit-line-clamp: 3;
+        -webkit-line-clamp: 4;
         -webkit-box-orient: vertical;
-        max-height: 4.2em;
+        max-height: 5.6em;
+        hyphens: auto;
       }
 
       @media (max-width: 768px) {
@@ -450,8 +446,6 @@
         
         .world-title {
           font-size: 0.95em;
-          max-height: 2.47em;
-          -webkit-line-clamp: 2;
         }
         
         .world-date {
@@ -460,8 +454,8 @@
         
         .world-description {
           font-size: 0.75em;
-          max-height: 3.15em;
-          -webkit-line-clamp: 3;
+          max-height: 4.2em;
+          -webkit-line-clamp: 4;
         }
       }
     </style>
@@ -854,7 +848,7 @@
             ${worlds.map(world => {
               const thumbnailUrl = world.thumbnailUri ? convertIconUrl(world.thumbnailUri) : 'https://assets.resonite.com/9adc7bf85f005413174dbb26c1ef3f62b6ce9e1abbbaf5b504d490b872107373';
               const publishDate = new Date(world.firstPublishTime).toLocaleDateString('ja-JP');
-              const worldName = truncateText(stripAllTags(world.name), 60);
+              const worldName = stripAllTags(world.name);
               const worldDescription = world.description ? truncateText(stripAllTags(world.description), 120) : '';
               const worldUrl = `https://go.resonite.com/world/${world.ownerId}/${world.id}`;
               
