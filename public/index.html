@@ -811,7 +811,12 @@
                         }
                         
                         <div class="detail-section">
-                            <h3>作成したワールド</h3>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                <h3 style="margin: 0;">作成したワールド</h3>
+                                <button onclick="openAllWorlds('${user.id}')" style="background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9em; transition: background 0.2s ease;" onmouseover="this.style.background='#5a67d8'" onmouseout="this.style.background='#667eea'">
+                                    すべて表示
+                                </button>
+                            </div>
                             <div id="user-worlds" style="margin-top: 10px;">
                                 <div style="text-align: center; color: #666;">読み込み中...</div>
                             </div>
@@ -1001,6 +1006,12 @@
             selection.removeAllRanges();
           }, 1500);
         }
+      }
+
+      // すべてのワールドを表示するページを開く
+      function openAllWorlds(userId) {
+        const url = `https://resonite-world-search-pages.pages.dev/?owner=${encodeURIComponent(userId)}`;
+        window.open(url, '_blank');
       }
 
       // ページ読み込み
