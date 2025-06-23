@@ -783,11 +783,80 @@
                         `
                             : ""
                         }
+                        
+                        <div class="detail-section">
+                            <h3>作成したワールド</h3>
+                            <div id="user-worlds" style="margin-top: 10px;">
+                                <div style="text-align: center; color: #666;">読み込み中...</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             `;
 
         searchResults.innerHTML = userHtml;
+        
+        loadUserWorlds(user.id);
+      }
+
+      // ユーザーのワールドを読み込み
+      async function loadUserWorlds(userId) {
+        try {
+          const response = await fetch('/api/worlds', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              byOwner: userId,
+              ownerType: "User",
+              recordType: "world",
+              private: false,
+              count: 6,
+              sortBy: "FirstPublishTime",
+              sortDirection: "Descending",
+              submittedTo: "G-Resonite"
+            })
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+          displayUserWorlds(data.records || []);
+        } catch (error) {
+          console.error('Error loading user worlds:', error);
+          document.getElementById('user-worlds').innerHTML = '<div style="text-align: center; color: #999;">ワールドの読み込みに失敗しました</div>';
+        }
+      }
+
+      // ユーザーワールドの表示
+      function displayUserWorlds(worlds) {
+        const worldsContainer = document.getElementById('user-worlds');
+        
+        if (!worlds || worlds.length === 0) {
+          worldsContainer.innerHTML = '<div style="text-align: center; color: #999;">公開されたワールドがありません</div>';
+          return;
+        }
+
+        const worldsHtml = worlds.map(world => {
+          const thumbnailUrl = world.thumbnailUrl ? convertIconUrl(world.thumbnailUrl) : 'https://assets.resonite.com/9adc7bf85f005413174dbb26c1ef3f62b6ce9e1abbbaf5b504d490b872107373';
+          const publishDate = new Date(world.firstPublishTime).toLocaleDateString('ja-JP');
+          
+          return `
+            <div class="world-item" style="border: 1px solid #e9ecef; border-radius: 8px; padding: 12px; margin-bottom: 10px; display: flex; gap: 12px;">
+              <img src="${thumbnailUrl}" alt="${world.name}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 6px; flex-shrink: 0;" onerror="this.src='https://assets.resonite.com/9adc7bf85f005413174dbb26c1ef3f62b6ce9e1abbbaf5b504d490b872107373'">
+              <div style="flex: 1; min-width: 0;">
+                <div style="font-weight: 500; color: #333; margin-bottom: 4px; word-break: break-word;">${world.name}</div>
+                <div style="font-size: 0.9em; color: #666; margin-bottom: 4px;">公開日: ${publishDate}</div>
+                ${world.description ? `<div style="font-size: 0.85em; color: #888; word-break: break-word;">${world.description}</div>` : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        worldsContainer.innerHTML = worldsHtml;
       }
 
       // 戻るボタン

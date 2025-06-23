@@ -6,6 +6,7 @@ const app = express();
 const port = 3000;
 
 app.use(cors());
+app.use(express.json());
 app.use(express.static('.'));
 
 app.get('/api/users', async (req, res) => {
@@ -62,6 +63,28 @@ app.get('/api/sessions', async (req, res) => {
         res.json(data);
     } catch (error) {
         console.error('Sessions API Error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+app.post('/api/worlds', async (req, res) => {
+    try {
+        const response = await fetch('https://api.resonite.com/records/pagedSearch', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(req.body)
+        });
+        
+        if (!response.ok) {
+            return res.status(response.status).json({ error: `API returned ${response.status}` });
+        }
+
+        const data = await response.json();
+        res.json(data);
+    } catch (error) {
+        console.error('Worlds API Error:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
