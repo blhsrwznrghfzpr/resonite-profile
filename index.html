@@ -688,28 +688,56 @@
                     <div style="margin-bottom: 20px;">
                         <button onclick="goBack()" style="background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">← 検索に戻る</button>
                     </div>
-                    <div class="user-header">
-                        <img class="user-avatar" src="${convertIconUrl(
-                          user.profile?.iconUrl
-                        )}" alt="Avatar" onerror="this.src='https://assets.resonite.com/9adc7bf85f005413174dbb26c1ef3f62b6ce9e1abbbaf5b504d490b872107373'">
-                        <div class="user-basic">
-                            <div class="username copyable" onclick="copyToClipboard('${
-                              user.username
-                            }', this)">
-                                ${user.username}
-                                <div class="copy-feedback">コピーしました!</div>
-                            </div>
-                            <div class="user-id copyable" onclick="copyToClipboard('${
-                              user.id
-                            }', this)">
-                                ${user.id}
-                                <div class="copy-feedback">コピーしました!</div>
-                            </div>
-                            <div class="user-dates" style="font-size: 0.9em; color: #666; margin-top: 8px;">
-                                <div>登録日: ${registrationDate}</div>
-                                ${migratedDate ? `<div>移行前登録日: ${migratedDate}</div>` : ''}
+                    <div class="user-header" style="display: flex; gap: 20px; align-items: flex-start;">
+                        <div style="display: flex; gap: 15px; align-items: flex-start; flex: 1;">
+                            <img class="user-avatar" src="${convertIconUrl(
+                              user.profile?.iconUrl
+                            )}" alt="Avatar" onerror="this.src='https://assets.resonite.com/9adc7bf85f005413174dbb26c1ef3f62b6ce9e1abbbaf5b504d490b872107373'">
+                            <div class="user-basic">
+                                <div class="username copyable" onclick="copyToClipboard('${
+                                  user.username
+                                }', this)">
+                                    ${user.username}
+                                    <div class="copy-feedback">コピーしました!</div>
+                                </div>
+                                <div class="user-id copyable" onclick="copyToClipboard('${
+                                  user.id
+                                }', this)">
+                                    ${user.id}
+                                    <div class="copy-feedback">コピーしました!</div>
+                                </div>
+                                <div class="user-dates" style="font-size: 0.9em; color: #666; margin-top: 8px;">
+                                    <div>登録日: ${registrationDate}</div>
+                                    ${migratedDate ? `<div>移行前登録日: ${migratedDate}</div>` : ''}
+                                </div>
                             </div>
                         </div>
+                        ${
+                          currentSession
+                            ? `
+                            <div class="current-session-header" style="flex: 0 0 auto; max-width: 300px;">
+                                <h4 style="margin: 0 0 8px 0; font-size: 1em; color: #333;">現在のセッション</h4>
+                                <a href="https://go.resonite.com/session/${
+                                  currentSession.sessionId
+                                }" target="_blank" style="text-decoration: none; color: inherit;">
+                                    <div style="padding: 10px; border: 1px solid #e9ecef; border-radius: 8px; cursor: pointer; transition: background-color 0.2s ease; background: #f8f9fa;">
+                                        <div style="font-weight: 500; margin-bottom: 8px; color: #333; font-size: 0.9em; word-break: break-word;">${currentSession.name.replace(
+                                          /<[^>]*>/g,
+                                          ""
+                                        )}</div>
+                                        ${
+                                          currentSession.thumbnailUrl
+                                            ? `
+                                            <img src="${currentSession.thumbnailUrl}" alt="セッションサムネイル" style="width: 100%; max-width: 200px; border-radius: 5px;">
+                                        `
+                                            : ""
+                                        }
+                                    </div>
+                                </a>
+                            </div>
+                        `
+                            : ""
+                        }
                     </div>
 
                     <div class="user-details">
@@ -738,33 +766,6 @@
                                       })
                                       .join("")}
                                 </div>
-                            </div>
-                        `
-                            : ""
-                        }
-                        
-                        ${
-                          currentSession
-                            ? `
-                            <div class="detail-section">
-                                <h3>現在のセッション</h3>
-                                <a href="https://go.resonite.com/session/${
-                                  currentSession.sessionId
-                                }" target="_blank" style="text-decoration: none; color: inherit;">
-                                    <div class="detail-item" style="flex-direction: column; align-items: flex-start; padding: 10px; border: 1px solid #e9ecef; border-radius: 8px; cursor: pointer; transition: background-color 0.2s ease;">
-                                        <span class="detail-value" style="font-weight: 500; margin-bottom: 10px; color: #333;">${currentSession.name.replace(
-                                          /<[^>]*>/g,
-                                          ""
-                                        )}</span>
-                                        ${
-                                          currentSession.thumbnailUrl
-                                            ? `
-                                            <img src="${currentSession.thumbnailUrl}" alt="セッションサムネイル" style="max-width: 100%; border-radius: 5px;">
-                                        `
-                                            : ""
-                                        }
-                                    </div>
-                                </a>
                             </div>
                         `
                             : ""
