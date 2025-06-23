@@ -384,6 +384,9 @@
         cursor: pointer;
         transition: all 0.2s ease;
         background: white;
+        overflow: hidden;
+        word-wrap: break-word;
+        word-break: break-word;
       }
 
       .world-thumbnail {
@@ -398,6 +401,8 @@
         flex: 1;
         display: flex;
         flex-direction: column;
+        min-height: 0;
+        overflow: hidden;
       }
 
       .world-title {
@@ -405,8 +410,15 @@
         color: #333;
         margin-bottom: 6px;
         word-break: break-word;
+        word-wrap: break-word;
         line-height: 1.3;
         font-size: 1em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        max-height: 3.9em;
       }
 
       .world-date {
@@ -428,10 +440,11 @@
         overflow: hidden;
         text-overflow: ellipsis;
         display: -webkit-box;
-        -webkit-line-clamp: 4;
+        -webkit-line-clamp: 3;
         -webkit-box-orient: vertical;
-        max-height: 5.6em;
+        max-height: 4.2em;
         hyphens: auto;
+        min-height: 0;
       }
 
       @media (max-width: 768px) {
@@ -446,6 +459,8 @@
         
         .world-title {
           font-size: 0.95em;
+          -webkit-line-clamp: 2;
+          max-height: 2.6em;
         }
         
         .world-date {
@@ -454,8 +469,8 @@
         
         .world-description {
           font-size: 0.75em;
-          max-height: 4.2em;
-          -webkit-line-clamp: 4;
+          max-height: 3.15em;
+          -webkit-line-clamp: 2;
         }
       }
     </style>
