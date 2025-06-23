@@ -374,9 +374,9 @@
         transform: translateY(-2px);
       }
     </style>
+    <script src="js/tagImages.js"></script>
   </head>
   <body>
-    <script src="js/tagImages.js"></script>
     <div class="container">
       <div class="header">
         <h1>Resonite ユーザー検索</h1>
@@ -492,7 +492,7 @@
                                 <div class="user-tags">
                                     ${user.tags
                                       .map((tag) => {
-                                        const iconUrl = getTagIcon(tag);
+                                        const iconUrl = safeGetTagIcon(tag);
                                         const displayName = tag.startsWith(
                                           "custom badge:"
                                         )
@@ -649,7 +649,7 @@
                                 <div class="tags-container">
                                     ${user.tags
                                       .map((tag) => {
-                                        const iconUrl = getTagIcon(tag);
+                                        const iconUrl = safeGetTagIcon(tag);
                                         const displayName = tag.startsWith(
                                           "custom badge:"
                                         )
@@ -684,6 +684,16 @@
         searchResults.innerHTML = userHtml;
         
         loadUserWorlds(user.id);
+      }
+
+      // タグアイコンを取得する関数（フォールバック付き）
+      function safeGetTagIcon(tagName) {
+        if (typeof getTagIcon === 'function') {
+          return getTagIcon(tagName);
+        }
+        // フォールバック：getTagIcon関数が読み込まれていない場合
+        console.warn('getTagIcon function not loaded yet for tag:', tagName);
+        return null;
       }
 
       // カラータグをHTMLに変換
