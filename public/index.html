@@ -368,6 +368,11 @@
           gap: 3px;
         }
       }
+
+      .world-item:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+        transform: translateY(-2px);
+      }
     </style>
   </head>
   <body>
@@ -680,6 +685,25 @@
         loadUserWorlds(user.id);
       }
 
+      // カラータグをHTMLに変換
+      function convertColorTags(text) {
+        if (!text) return '';
+        
+        // カラータグのパターンをHTMLに変換
+        return text
+          .replace(/<color=#([0-9A-Fa-f]{6})>/g, '<span style="color: #$1;">')
+          .replace(/<color=([a-zA-Z]+)>/g, '<span style="color: $1;">')
+          .replace(/<\/color>/g, '</span>')
+          .replace(/<b>/g, '<strong>')
+          .replace(/<\/b>/g, '</strong>')
+          .replace(/<i>/g, '<em>')
+          .replace(/<\/i>/g, '</em>')
+          .replace(/<u>/g, '<u>')
+          .replace(/<\/u>/g, '</u>')
+          .replace(/<size=([0-9.]+)>/g, '<span style="font-size: $1em;">')
+          .replace(/<\/size>/g, '</span>');
+      }
+
       // ユーザーのワールドを読み込み
       async function loadUserWorlds(userId) {
         try {
@@ -724,18 +748,23 @@
         const worldsHtml = `
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px;">
             ${worlds.map(world => {
-              const thumbnailUrl = world.thumbnailUrl ? convertIconUrl(world.thumbnailUrl) : 'https://assets.resonite.com/9adc7bf85f005413174dbb26c1ef3f62b6ce9e1abbbaf5b504d490b872107373';
+              const thumbnailUrl = world.thumbnailUri ? convertIconUrl(world.thumbnailUri) : 'https://assets.resonite.com/9adc7bf85f005413174dbb26c1ef3f62b6ce9e1abbbaf5b504d490b872107373';
               const publishDate = new Date(world.firstPublishTime).toLocaleDateString('ja-JP');
+              const worldName = convertColorTags(world.name);
+              const worldDescription = world.description ? convertColorTags(world.description) : '';
+              const worldUrl = `https://go.resonite.com/world/${world.ownerId}/${world.id}`;
               
               return `
-                <div class="world-item" style="border: 1px solid #e9ecef; border-radius: 8px; padding: 12px; display: flex; gap: 12px;">
-                  <img src="${thumbnailUrl}" alt="${world.name}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 6px; flex-shrink: 0;" onerror="this.src='https://assets.resonite.com/9adc7bf85f005413174dbb26c1ef3f62b6ce9e1abbbaf5b504d490b872107373'">
-                  <div style="flex: 1; min-width: 0;">
-                    <div style="font-weight: 500; color: #333; margin-bottom: 4px; word-break: break-word;">${world.name}</div>
-                    <div style="font-size: 0.9em; color: #666; margin-bottom: 4px;">公開日: ${publishDate}</div>
-                    ${world.description ? `<div style="font-size: 0.85em; color: #888; word-break: break-word;">${world.description}</div>` : ''}
+                <a href="${worldUrl}" target="_blank" style="text-decoration: none; color: inherit;">
+                  <div class="world-item" style="border: 1px solid #e9ecef; border-radius: 8px; padding: 12px; display: flex; gap: 12px; cursor: pointer; transition: box-shadow 0.2s ease; background: white;">
+                    <img src="${thumbnailUrl}" alt="${world.name}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 6px; flex-shrink: 0;" onerror="this.src='https://assets.resonite.com/9adc7bf85f005413174dbb26c1ef3f62b6ce9e1abbbaf5b504d490b872107373'">
+                    <div style="flex: 1; min-width: 0;">
+                      <div style="font-weight: 500; color: #333; margin-bottom: 4px; word-break: break-word;">${worldName}</div>
+                      <div style="font-size: 0.9em; color: #666; margin-bottom: 4px;">公開日: ${publishDate}</div>
+                      ${worldDescription ? `<div style="font-size: 0.85em; color: #888; word-break: break-word;">${worldDescription}</div>` : ''}
+                    </div>
                   </div>
-                </div>
+                </a>
               `;
             }).join('')}
           </div>
