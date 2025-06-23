@@ -794,6 +794,19 @@
         return text.substring(0, maxLength) + '...';
       }
 
+      // すべてのHTMLタグを除去してプレーンテキストにする
+      function stripAllTags(text) {
+        if (!text) return '';
+        return text
+          .replace(/<[^>]*>/g, '')  // すべてのHTMLタグを除去
+          .replace(/&lt;/g, '<')    // HTMLエンティティをデコード
+          .replace(/&gt;/g, '>')
+          .replace(/&amp;/g, '&')
+          .replace(/&quot;/g, '"')
+          .replace(/&#39;/g, "'")
+          .trim();
+      }
+
       // カラータグをHTMLに変換
       function convertColorTags(text) {
         if (!text) return '';
@@ -860,7 +873,7 @@
               const thumbnailUrl = world.thumbnailUri ? convertIconUrl(world.thumbnailUri) : 'https://assets.resonite.com/9adc7bf85f005413174dbb26c1ef3f62b6ce9e1abbbaf5b504d490b872107373';
               const publishDate = new Date(world.firstPublishTime).toLocaleDateString('ja-JP');
               const worldName = truncateText(convertColorTags(world.name), 60);
-              const worldDescription = world.description ? truncateText(convertColorTags(world.description), 120) : '';
+              const worldDescription = world.description ? truncateText(stripAllTags(world.description), 120) : '';
               const worldUrl = `https://go.resonite.com/world/${world.ownerId}/${world.id}`;
               
               return `
