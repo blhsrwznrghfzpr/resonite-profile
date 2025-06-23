@@ -13,6 +13,7 @@ ResoniteユーザーのプロフィールやタグなどのユーザーID・名�
 
 - **フロントエンド**: HTML/CSS/JavaScript（バニラJS）
 - **バックエンド**: Node.js/Express
+- **依存関係**: CORS対応
 - **API**: Resonite公式API
 
 ## インストール・実行方法
@@ -38,10 +39,15 @@ npm start
 
 ```
 .
-├── server.js       # Express サーバー
-├── index.html      # フロントエンドアプリ
-├── package.json    # パッケージ設定
-└── README.md       # このファイル
+├── server.js          # Express サーバー
+├── package.json       # パッケージ設定
+├── package-lock.json  # 依存関係のロックファイル
+├── public/            # 静的ファイル
+│   ├── index.html     # フロントエンドアプリ
+│   └── js/
+│       └── tagImages.js  # タグ画像関連処理
+├── node_modules/      # npm依存関係
+└── README.md          # このファイル
 ```
 
 ## API エンドポイント
