@@ -705,28 +705,14 @@
                                 ${user.id}
                                 <div class="copy-feedback">コピーしました!</div>
                             </div>
+                            <div class="user-dates" style="font-size: 0.9em; color: #666; margin-top: 8px;">
+                                <div>登録日: ${registrationDate}</div>
+                                ${migratedDate ? `<div>移行前登録日: ${migratedDate}</div>` : ''}
+                            </div>
                         </div>
                     </div>
 
                     <div class="user-details">
-                        <div class="detail-section">
-                            <h3>基本情報</h3>
-                            <div class="detail-item">
-                                <span class="detail-label">登録日</span>
-                                <span class="detail-value">${registrationDate}</span>
-                            </div>
-                            ${
-                              migratedDate
-                                ? `
-                                <div class="detail-item">
-                                    <span class="detail-label">移行前登録日</span>
-                                    <span class="detail-value">${migratedDate}</span>
-                                </div>
-                            `
-                                : ""
-                            }
-                        </div>
-
                         ${
                           user.tags && user.tags.length > 0
                             ? `
