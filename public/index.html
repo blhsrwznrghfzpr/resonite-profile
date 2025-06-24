@@ -1,10 +1,14 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Resonite ユーザー検索</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='35' cy='35' r='20' fill='none' stroke='%23667eea' stroke-width='6'/%3E%3Cline x1='50' y1='50' x2='70' y2='70' stroke='%23667eea' stroke-width='6' stroke-linecap='round'/%3E%3Ccircle cx='75' cy='25' r='8' fill='%23764ba2'/%3E%3C/svg%3E">
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='35' cy='35' r='20' fill='none' stroke='%23667eea' stroke-width='6'/%3E%3Cline x1='50' y1='50' x2='70' y2='70' stroke='%23667eea' stroke-width='6' stroke-linecap='round'/%3E%3Ccircle cx='75' cy='25' r='8' fill='%23764ba2'/%3E%3C/svg%3E"
+    />
     <style>
       * {
         margin: 0;
@@ -13,7 +17,7 @@
       }
 
       body {
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         min-height: 100vh;
         padding: 20px;
@@ -501,21 +505,21 @@
           height: auto;
           min-height: 300px;
         }
-        
+
         .world-thumbnail {
           height: 180px;
         }
-        
+
         .world-title {
           font-size: 0.95em;
           -webkit-line-clamp: 2;
           max-height: 2.6em;
         }
-        
+
         .world-date {
           font-size: 0.8em;
         }
-        
+
         .world-description {
           font-size: 0.75em;
           max-height: 3.15em;
@@ -555,29 +559,28 @@
     </div>
 
     <script>
-      const API_BASE = "/api/users";
+      const API_BASE = '/api/users';
 
-      const searchInput = document.getElementById("searchInput");
-      const searchBtn = document.getElementById("searchBtn");
-      const searchResults = document.getElementById("searchResults");
+      const searchInput = document.getElementById('searchInput');
+      const searchBtn = document.getElementById('searchBtn');
+      const searchResults = document.getElementById('searchResults');
 
-      let currentView = "search"; // 'search' or 'detail'
+      let currentView = 'search'; // 'search' or 'detail'
       let currentUser = null;
 
       // resdb URLをassets.resonite.comに変換
       function convertIconUrl(iconUrl) {
         if (!iconUrl)
-          return "https://assets.resonite.com/9adc7bf85f005413174dbb26c1ef3f62b6ce9e1abbbaf5b504d490b872107373";
+          return 'https://assets.resonite.com/9adc7bf85f005413174dbb26c1ef3f62b6ce9e1abbbaf5b504d490b872107373';
 
-        if (iconUrl.startsWith("resdb:///")) {
-          const filename = iconUrl.replace("resdb:///", "");
-          const filenameWithoutExt = filename.replace(/\.[^/.]+$/, "");
+        if (iconUrl.startsWith('resdb:///')) {
+          const filename = iconUrl.replace('resdb:///', '');
+          const filenameWithoutExt = filename.replace(/\.[^/.]+$/, '');
           return `https://assets.resonite.com/${filenameWithoutExt}`;
         }
 
         return iconUrl;
       }
-
 
       // 検索実行
       async function performSearch() {
@@ -614,7 +617,7 @@
 
         const resultsHtml = users
           .map(
-            (user) => `
+            user => `
                 <div class="user-info" onclick="showUserDetail('${
                   user.id
                 }')" style="cursor: pointer;">
@@ -642,37 +645,37 @@
                                 ? `
                                 <div class="user-tags">
                                     ${user.tags
-                                      .map((tag) => {
+                                      .map(tag => {
                                         const iconUrl = safeGetTagIcon(tag);
                                         const displayName = tag.startsWith(
-                                          "custom badge:"
+                                          'custom badge:'
                                         )
-                                          ? "custom badge"
+                                          ? 'custom badge'
                                           : tag;
                                         return iconUrl
                                           ? `<img class="tag-icon" src="${iconUrl}" alt="${displayName}" title="${displayName}" onerror="this.style.display='none'">`
-                                          : "";
+                                          : '';
                                       })
                                       .filter(Boolean)
-                                      .join("")}
+                                      .join('')}
                                 </div>
                             `
-                                : ""
+                                : ''
                             }
                         </div>
                     </div>
                 </div>
             `
           )
-          .join("");
+          .join('');
 
         searchResults.innerHTML = resultsHtml;
       }
 
       // イベントリスナー
-      searchBtn.addEventListener("click", performSearch);
-      searchInput.addEventListener("keypress", (e) => {
-        if (e.key === "Enter") {
+      searchBtn.addEventListener('click', performSearch);
+      searchInput.addEventListener('keypress', e => {
+        if (e.key === 'Enter') {
           performSearch();
         }
       });
@@ -680,7 +683,7 @@
       // ユーザー詳細を表示
       async function showUserDetail(userId) {
         try {
-          history.pushState({ userId }, "", `/user/${userId}`);
+          history.pushState({ userId }, '', `/user/${userId}`);
           searchResults.innerHTML =
             '<div class="loading">ユーザー情報を読み込み中...</div>';
 
@@ -698,25 +701,25 @@
           // セッション情報を取得
           let currentSession = null;
           try {
-            const sessionResponse = await fetch("/api/sessions");
+            const sessionResponse = await fetch('/api/sessions');
             if (sessionResponse.ok) {
               const sessions = await sessionResponse.json();
               // ユーザーが参加しているセッションを検索
               currentSession = sessions.find(
-                (session) =>
+                session =>
                   session.sessionUsers &&
                   session.sessionUsers.some(
-                    (sessionUser) =>
+                    sessionUser =>
                       sessionUser.userID === userId && sessionUser.isPresent
                   )
               );
             }
           } catch (sessionError) {
-            console.warn("セッション情報の取得に失敗しました:", sessionError);
+            console.warn('セッション情報の取得に失敗しました:', sessionError);
           }
 
           currentUser = user;
-          currentView = "detail";
+          currentView = 'detail';
           displayUserDetail(user, currentSession);
         } catch (error) {
           searchResults.innerHTML = `<div class="error">エラーが発生しました: ${error.message}</div>`;
@@ -727,10 +730,10 @@
       function displayUserDetail(user, currentSession = null) {
         const registrationDate = new Date(
           user.registrationDate
-        ).toLocaleDateString("ja-JP");
+        ).toLocaleDateString('ja-JP');
         const migratedDate = user.migratedData
           ? new Date(user.migratedData.registrationDate).toLocaleDateString(
-              "ja-JP"
+              'ja-JP'
             )
           : null;
 
@@ -780,20 +783,20 @@
                                     <div style="padding: 10px; border: 1px solid #e9ecef; border-radius: 8px; cursor: pointer; transition: background-color 0.2s ease; background: #f8f9fa;">
                                         <div style="font-weight: 500; margin-bottom: 8px; color: #333; font-size: 0.9em; word-break: break-word;">${currentSession.name.replace(
                                           /<[^>]*>/g,
-                                          ""
+                                          ''
                                         )}</div>
                                         ${
                                           currentSession.thumbnailUrl
                                             ? `
                                             <img src="${currentSession.thumbnailUrl}" alt="セッションサムネイル" style="width: 100%; max-width: 200px; border-radius: 5px;">
                                         `
-                                            : ""
+                                            : ''
                                         }
                                     </div>
                                 </a>
                             </div>
                         `
-                            : ""
+                            : ''
                         }
                     </div>
 
@@ -805,27 +808,27 @@
                                 <h3>バッジ</h3>
                                 <div class="tags-container">
                                     ${user.tags
-                                      .map((tag) => {
+                                      .map(tag => {
                                         const iconUrl = safeGetTagIcon(tag);
                                         const displayName = tag.startsWith(
-                                          "custom badge:"
+                                          'custom badge:'
                                         )
-                                          ? "custom badge"
+                                          ? 'custom badge'
                                           : tag;
                                         return `<span class="tag">
                                             ${
                                               iconUrl
                                                 ? `<img class="tag-icon" src="${iconUrl}" alt="${tag}" onerror="this.style.display='none'">`
-                                                : ""
+                                                : ''
                                             }
                                             ${displayName}
                                         </span>`;
                                       })
-                                      .join("")}
+                                      .join('')}
                                 </div>
                             </div>
                         `
-                            : ""
+                            : ''
                         }
                         
                         <div class="detail-section">
@@ -844,7 +847,7 @@
             `;
 
         searchResults.innerHTML = userHtml;
-        
+
         loadUserWorlds(user.id);
       }
 
@@ -869,8 +872,8 @@
       function stripAllTags(text) {
         if (!text) return '';
         return text
-          .replace(/<[^>]*>/g, '')  // すべてのHTMLタグを除去
-          .replace(/&lt;/g, '<')    // HTMLエンティティをデコード
+          .replace(/<[^>]*>/g, '') // すべてのHTMLタグを除去
+          .replace(/&lt;/g, '<') // HTMLエンティティをデコード
           .replace(/&gt;/g, '>')
           .replace(/&amp;/g, '&')
           .replace(/&quot;/g, '"')
@@ -878,25 +881,24 @@
           .trim();
       }
 
-
       // ユーザーのワールドを読み込み
       async function loadUserWorlds(userId) {
         try {
           const response = await fetch('/api/worlds', {
             method: 'POST',
             headers: {
-              'Content-Type': 'application/json'
+              'Content-Type': 'application/json',
             },
             body: JSON.stringify({
               byOwner: userId,
-              ownerType: "User",
-              recordType: "world",
+              ownerType: 'User',
+              recordType: 'world',
               private: false,
               count: 6,
-              sortBy: "FirstPublishTime",
-              sortDirection: "Descending",
-              submittedTo: "G-Resonite"
-            })
+              sortBy: 'FirstPublishTime',
+              sortDirection: 'Descending',
+              submittedTo: 'G-Resonite',
+            }),
           });
 
           if (!response.ok) {
@@ -907,29 +909,38 @@
           displayUserWorlds(data.records || []);
         } catch (error) {
           console.error('Error loading user worlds:', error);
-          document.getElementById('user-worlds').innerHTML = '<div style="text-align: center; color: #999;">ワールドの読み込みに失敗しました</div>';
+          document.getElementById('user-worlds').innerHTML =
+            '<div style="text-align: center; color: #999;">ワールドの読み込みに失敗しました</div>';
         }
       }
 
       // ユーザーワールドの表示
       function displayUserWorlds(worlds) {
         const worldsContainer = document.getElementById('user-worlds');
-        
+
         if (!worlds || worlds.length === 0) {
-          worldsContainer.innerHTML = '<div style="text-align: center; color: #999;">公開されたワールドがありません</div>';
+          worldsContainer.innerHTML =
+            '<div style="text-align: center; color: #999;">公開されたワールドがありません</div>';
           return;
         }
 
         const worldsHtml = `
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
-            ${worlds.map(world => {
-              const thumbnailUrl = world.thumbnailUri ? convertIconUrl(world.thumbnailUri) : 'https://assets.resonite.com/9adc7bf85f005413174dbb26c1ef3f62b6ce9e1abbbaf5b504d490b872107373';
-              const publishDate = new Date(world.firstPublishTime).toLocaleDateString('ja-JP');
-              const worldName = stripAllTags(world.name);
-              const worldDescription = world.description ? truncateText(stripAllTags(world.description), 120) : '';
-              const worldUrl = `https://go.resonite.com/world/${world.ownerId}/${world.id}`;
-              
-              return `
+            ${worlds
+              .map(world => {
+                const thumbnailUrl = world.thumbnailUri
+                  ? convertIconUrl(world.thumbnailUri)
+                  : 'https://assets.resonite.com/9adc7bf85f005413174dbb26c1ef3f62b6ce9e1abbbaf5b504d490b872107373';
+                const publishDate = new Date(
+                  world.firstPublishTime
+                ).toLocaleDateString('ja-JP');
+                const worldName = stripAllTags(world.name);
+                const worldDescription = world.description
+                  ? truncateText(stripAllTags(world.description), 120)
+                  : '';
+                const worldUrl = `https://go.resonite.com/world/${world.ownerId}/${world.id}`;
+
+                return `
                 <a href="${worldUrl}" target="_blank" style="text-decoration: none; color: inherit;">
                   <div class="world-card world-item">
                     <img src="${thumbnailUrl}" alt="${world.name}" class="world-thumbnail" onerror="this.src='https://assets.resonite.com/9adc7bf85f005413174dbb26c1ef3f62b6ce9e1abbbaf5b504d490b872107373'">
@@ -941,7 +952,8 @@
                   </div>
                 </a>
               `;
-            }).join('')}
+              })
+              .join('')}
           </div>
         `;
 
@@ -950,26 +962,26 @@
 
       // 戻るボタン
       function goBack() {
-        history.pushState({}, "", "/");
-        currentView = "search";
+        history.pushState({}, '', '/');
+        currentView = 'search';
         currentUser = null;
-        searchResults.innerHTML = "";
+        searchResults.innerHTML = '';
       }
 
       // バイト数フォーマット
       function formatBytes(bytes) {
-        if (bytes === 0) return "0 Bytes";
+        if (bytes === 0) return '0 Bytes';
         const k = 1024;
-        const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
         const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
       }
 
       // ページ読み込み時の処理
       function handlePageLoad() {
         const path = window.location.pathname;
-        if (path.startsWith("/user/")) {
-          const userId = path.replace("/user/", "");
+        if (path.startsWith('/user/')) {
+          const userId = path.replace('/user/', '');
           if (userId) {
             showUserDetail(userId);
             return;
@@ -981,13 +993,13 @@
       }
 
       // ブラウザの戻る/進むボタン対応
-      window.addEventListener("popstate", (event) => {
+      window.addEventListener('popstate', event => {
         if (event.state && event.state.userId) {
           showUserDetail(event.state.userId);
         } else {
-          currentView = "search";
+          currentView = 'search';
           currentUser = null;
-          searchResults.innerHTML = "";
+          searchResults.innerHTML = '';
         }
       });
 
@@ -997,14 +1009,14 @@
           await navigator.clipboard.writeText(text);
 
           // フィードバック表示
-          const feedback = element.querySelector(".copy-feedback");
-          feedback.classList.add("show");
+          const feedback = element.querySelector('.copy-feedback');
+          feedback.classList.add('show');
 
           setTimeout(() => {
-            feedback.classList.remove("show");
+            feedback.classList.remove('show');
           }, 1500);
         } catch (err) {
-          console.error("コピーに失敗しました:", err);
+          console.error('コピーに失敗しました:', err);
 
           // フォールバック: 選択状態にする
           const range = document.createRange();
@@ -1014,13 +1026,13 @@
           selection.addRange(range);
 
           // フィードバック（エラー）
-          const feedback = element.querySelector(".copy-feedback");
-          feedback.textContent = "テキストを選択しました";
-          feedback.classList.add("show");
+          const feedback = element.querySelector('.copy-feedback');
+          feedback.textContent = 'テキストを選択しました';
+          feedback.classList.add('show');
 
           setTimeout(() => {
-            feedback.classList.remove("show");
-            feedback.textContent = "コピーしました!";
+            feedback.classList.remove('show');
+            feedback.textContent = 'コピーしました!';
             selection.removeAllRanges();
           }, 1500);
         }
