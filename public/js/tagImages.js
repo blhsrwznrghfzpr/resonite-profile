@@ -68,6 +68,8 @@ const tagImages = {
     '5452873da954c2e76f153ecb4a7122855ec6c63c63e8a92a5a3bc684ae4aa053',
   'mmc23 other:tau':
     '5452873da954c2e76f153ecb4a7122855ec6c63c63e8a92a5a3bc684ae4aa053',
+  'mmc23 art':
+    'c21dee140cec42742c0b7c5c0adbad42973850a04dc33f20468b6b2e0da60e1c',
 
   // MMC24
   'mmc24 participant':
@@ -126,8 +128,16 @@ const tagImages = {
     'ea3e4281b20e3250bb58d6e26505c6272d006714c4c78945367f146a97851a9c',
 
   // Pride Flag
+  'pride aegosexual':
+    'https://github.com/Yellow-Dog-Man/PrideFlags/raw/main/PNGs/Color_128/Color_128_PrideFlag_Aegosexual.png',
+
   'pride agender':
     'https://github.com/Yellow-Dog-Man/PrideFlags/raw/main/PNGs/Color_128/Color_128_PrideFlag_Agender.png',
+  'pride aroace':
+    'https://github.com/Yellow-Dog-Man/PrideFlags/raw/main/PNGs/Color_128/Color_128_PrideFlag_Aroace.png',
+  'pride aromantic':
+    'https://github.com/Yellow-Dog-Man/PrideFlags/raw/main/PNGs/Color_128/Color_128_PrideFlag_Aromantic.png',
+
   'pride asexual':
     'https://github.com/Yellow-Dog-Man/PrideFlags/raw/main/PNGs/Color_128/Color_128_PrideFlag_Asexual.png',
   'pride bigender':
@@ -144,6 +154,9 @@ const tagImages = {
     'https://github.com/Yellow-Dog-Man/PrideFlags/raw/main/PNGs/Color_128/Color_128_PrideFlag_Genderqueer.png',
   'pride gilbertbaker':
     'https://github.com/Yellow-Dog-Man/PrideFlags/raw/main/PNGs/Color_128/Color_128_PrideFlag_GilbertBaker.png',
+  'pride graysexual':
+    'https://github.com/Yellow-Dog-Man/PrideFlags/raw/main/PNGs/Color_128/Color_128_PrideFlag_Graysexual.png',
+
   'pride intersexprogress':
     'https://github.com/Yellow-Dog-Man/PrideFlags/raw/main/PNGs/Color_128/Color_128_PrideFlag_Intersex-InclusiveProgress.png',
   'pride intersex':
@@ -166,12 +179,21 @@ const tagImages = {
     'https://github.com/Yellow-Dog-Man/PrideFlags/raw/main/PNGs/Color_128/Color_128_PrideFlag_Queer.png',
   'pride queerpeopleofcolor':
     'https://github.com/Yellow-Dog-Man/PrideFlags/raw/main/PNGs/Color_128/Color_128_PrideFlag_QueerPeopleOfColor.png',
+  'pride straightally':
+    'https://github.com/Yellow-Dog-Man/PrideFlags/raw/main/PNGs/Color_128/Color_128_PrideFlag_StraightAlly.png',
+
   'pride traditional':
     'https://github.com/Yellow-Dog-Man/PrideFlags/raw/main/PNGs/Color_128/Color_128_PrideFlag_Traditional.png',
-  'pride transinclusivegaymens':
+  'pride transinclusivegaymen':
     'https://github.com/Yellow-Dog-Man/PrideFlags/raw/main/PNGs/Color_128/Color_128_PrideFlag_TransInclusiveGayMens.png',
+  'pride transfeminine':
+    'https://github.com/Yellow-Dog-Man/PrideFlags/raw/main/PNGs/Color_128/Color_128_PrideFlag_Transfeminine.png',
+
   'pride transgender':
     'https://github.com/Yellow-Dog-Man/PrideFlags/raw/main/PNGs/Color_128/Color_128_PrideFlag_Transgender.png',
+  'pride transmasculine':
+    'https://github.com/Yellow-Dog-Man/PrideFlags/raw/main/PNGs/Color_128/Color_128_PrideFlag_Transmasculine.png',
+
   'pride twospirit':
     'https://github.com/Yellow-Dog-Man/PrideFlags/raw/main/PNGs/Color_128/Color_128_PrideFlag_TwoSpirit.png',
 };
