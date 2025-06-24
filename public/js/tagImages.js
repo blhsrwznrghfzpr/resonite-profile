@@ -37,8 +37,6 @@ const tagImages = {
     '1d3743ff2c9ef6c2722b1de819aee5b516dbe0bd0ef9ba536985d8f081753cef',
   'mmc21 world:misc 1st':
     'afbb7d44fdb65d285a5217ba7faaa73638db5acb6db7ab9e06e82bcdabd55859',
-  'mmc22 world':
-    'f9a58d294185c215b0bbd3b2469927098b02179ec333f4d9802b79d96f321303',
 
   // MMC22
   'mmc22 participant':
@@ -55,6 +53,8 @@ const tagImages = {
     'c5cbb3d6b9ed17539c5ba146d5ec30cfeb5d1ff0423738667b0e6991c8eddd08',
   'mmc22 esd':
     'aa0566eb57bbc9192afbcdeec6c6458102223c4ec1c8a858ae1a65040c910a1d',
+  'mmc22 world':
+    'f9a58d294185c215b0bbd3b2469927098b02179ec333f4d9802b79d96f321303',
 
   // MMC23
   'mmc23 participant':
