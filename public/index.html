@@ -723,20 +723,24 @@
         const username = user.username || 'Unknown User';
         const avatarUrl = convertIconUrl(user.profile?.iconUrl);
         
+        // ユーザー情報からdescriptionを生成
+        const registrationDate = new Date(user.registrationDate).toLocaleDateString('ja-JP');
+        let description = `${username} • ${registrationDate}登録`;
+        
         // タイトルを更新
         document.title = `${username} - Resonite Profile`;
         
         // OGPタグを更新（既存のものがあれば削除して新規作成）
         const metaTags = [
           { property: 'og:title', content: `${username} - Resonite Profile` },
-          { property: 'og:description', content: `${username}のResoniteプロフィール情報を表示しています。` },
+          { property: 'og:description', content: description },
           { property: 'og:image', content: avatarUrl },
           { property: 'og:url', content: window.location.href },
           { property: 'og:type', content: 'profile' },
           { property: 'og:site_name', content: 'Resonite ユーザー検索' },
           { name: 'twitter:card', content: 'summary' },
           { name: 'twitter:title', content: `${username} - Resonite Profile` },
-          { name: 'twitter:description', content: `${username}のResoniteプロフィール情報を表示しています。` },
+          { name: 'twitter:description', content: description },
           { name: 'twitter:image', content: avatarUrl }
         ];
         

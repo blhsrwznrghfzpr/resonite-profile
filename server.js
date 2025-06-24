@@ -140,16 +140,22 @@ app.get('/user/:id', async (req, res) => {
       const username = userData.username || 'Unknown User';
       const avatarUrl = convertIconUrl(userData.profile?.iconUrl);
 
+      // ユーザー情報からdescriptionを生成
+      const registrationDate = new Date(
+        userData.registrationDate
+      ).toLocaleDateString('ja-JP');
+      const description = `${username} • ${registrationDate}登録`;
+
       ogpTags = `
     <meta property="og:title" content="${username} - Resonite Profile" />
-    <meta property="og:description" content="${username}のResoniteプロフィール情報を表示しています。" />
+    <meta property="og:description" content="${description}" />
     <meta property="og:image" content="${avatarUrl}" />
     <meta property="og:url" content="${req.protocol}://${req.get('host')}/user/${id}" />
     <meta property="og:type" content="profile" />
     <meta property="og:site_name" content="Resonite ユーザー検索" />
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="${username} - Resonite Profile" />
-    <meta name="twitter:description" content="${username}のResoniteプロフィール情報を表示しています。" />
+    <meta name="twitter:description" content="${description}" />
     <meta name="twitter:image" content="${avatarUrl}" />
     <title>${username} - Resonite Profile</title>`;
     }
