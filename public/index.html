@@ -718,8 +718,50 @@
         }
       }
 
+      // メタタグを動的に更新
+      function updateMetaTags(user) {
+        const username = user.username || 'Unknown User';
+        const avatarUrl = convertIconUrl(user.profile?.iconUrl);
+        
+        // タイトルを更新
+        document.title = `${username} - Resonite Profile`;
+        
+        // OGPタグを更新（既存のものがあれば削除して新規作成）
+        const metaTags = [
+          { property: 'og:title', content: `${username} - Resonite Profile` },
+          { property: 'og:description', content: `${username}のResoniteプロフィール情報を表示しています。` },
+          { property: 'og:image', content: avatarUrl },
+          { property: 'og:url', content: window.location.href },
+          { property: 'og:type', content: 'profile' },
+          { property: 'og:site_name', content: 'Resonite ユーザー検索' },
+          { name: 'twitter:card', content: 'summary' },
+          { name: 'twitter:title', content: `${username} - Resonite Profile` },
+          { name: 'twitter:description', content: `${username}のResoniteプロフィール情報を表示しています。` },
+          { name: 'twitter:image', content: avatarUrl }
+        ];
+        
+        // 既存のOGPタグを削除
+        document.querySelectorAll('meta[property^="og:"], meta[name^="twitter:"]').forEach(tag => {
+          tag.remove();
+        });
+        
+        // 新しいメタタグを追加
+        metaTags.forEach(tagData => {
+          const meta = document.createElement('meta');
+          if (tagData.property) {
+            meta.setAttribute('property', tagData.property);
+          } else if (tagData.name) {
+            meta.setAttribute('name', tagData.name);
+          }
+          meta.setAttribute('content', tagData.content);
+          document.head.appendChild(meta);
+        });
+      }
+
       // ユーザー詳細表示
       function displayUserDetail(user, currentSession = null) {
+        // メタタグを更新
+        updateMetaTags(user);
         const registrationDate = new Date(
           user.registrationDate
         ).toLocaleDateString('ja-JP');
@@ -958,6 +1000,12 @@
         currentView = 'search';
         currentUser = null;
         searchResults.innerHTML = '';
+        
+        // メタタグをリセット
+        document.title = 'Resonite ユーザー検索';
+        document.querySelectorAll('meta[property^="og:"], meta[name^="twitter:"]').forEach(tag => {
+          tag.remove();
+        });
       }
 
       // バイト数フォーマット
