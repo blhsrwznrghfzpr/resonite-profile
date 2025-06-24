@@ -8,6 +8,7 @@ const tagImages = {
   potato: '9e2df387f7ab288486d5abd8ebb760d87872227a47779c897593c263f27b1f8e',
   'durian tester':
     '1c62e8c224af005c9293bc636dd3e93e8f6d2aba202287cf40cbcfe1259129d4',
+  mute: '89dcd8ab20fe52f799309e01b4a64a4f055bb864dd68ae52bce4382c0d1ea3b7',
 
   // MMC 汎用
   'mmc participant':
@@ -34,6 +35,10 @@ const tagImages = {
     '562b055984508ea11eda9472620c544a4fedf80330bb8c0b234504597e96da76',
   'mmc21 meme 3rd':
     '1d3743ff2c9ef6c2722b1de819aee5b516dbe0bd0ef9ba536985d8f081753cef',
+  'mmc21 world:misc 1st':
+    'afbb7d44fdb65d285a5217ba7faaa73638db5acb6db7ab9e06e82bcdabd55859',
+  'mmc22 world':
+    'f9a58d294185c215b0bbd3b2469927098b02179ec333f4d9802b79d96f321303',
 
   // MMC22
   'mmc22 participant':
