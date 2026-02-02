@@ -106,6 +106,10 @@ const tagImages = {
   'mmc25 meme':
     '813773c8c26c936f804db06e19cc1b36273ee73c1658df6e0c7c3e771d7fd8b6',
 
+  // MMC26
+  'mmc26 gifty':
+    'b0d378d7e4fb9b46190cdb198fd770623929723827c705c66e84cda1f32a4882',
+
   // Neos Festa
   'neos festa 3':
     '8f329d39f0f6c4778afe7dd1f2c85461cfd0c57a79ebdbe648cfb5de797261b1',
@@ -131,6 +135,9 @@ const tagImages = {
     'f31448d1140a687cbc7917e0a169ebcd2d7ea477f6bbc8853f576c9e43053d5a',
   'halloween24 winner':
     'ea3e4281b20e3250bb58d6e26505c6272d006714c4c78945367f146a97851a9c',
+  jmof25: '057beb177e1519bb6cd0cf37e961117b9739e966ee5ab5b4b9415aa33eb71660',
+  'halloween25 participant':
+    'f053c200862d16025f46ae9e4fcf7d42334f206e12adb032f34bcbf7fb1e1b61',
 
   // Pride Flag
   'pride aegosexual':
