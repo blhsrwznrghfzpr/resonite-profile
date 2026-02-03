@@ -25,7 +25,7 @@
     "lint-staged": "^16.1.2",
     "nodemon": "^3.0.1",
     "prettier": "^3.6.0",
-    "resonitelink.js": "file:../ResoniteLink.js"
+    "resonitelink.js": "file:./ResoniteLink.js"
   },
   "lint-staged": {
     "*.js": [
