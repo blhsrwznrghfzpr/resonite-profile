@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "description": "Cloudflare Worker alert threshold template for Step 6 rollout",
+  "service": "resonite-profile-worker",
+  "alerts": [
+    {
+      "name": "worker-5xx-ratio-high",
+      "metric": "5xx_ratio",
+      "window": "5m",
+      "threshold": 0.02,
+      "consecutive_windows": 3,
+      "severity": "critical",
+      "notification_targets": ["slack:#oncall", "pagerduty:edge-primary"]
+    },
+    {
+      "name": "worker-429-ratio-high",
+      "metric": "429_ratio",
+      "window": "5m",
+      "threshold": 0.05,
+      "consecutive_windows": 3,
+      "severity": "warning",
+      "notification_targets": ["slack:#oncall"]
+    },
+    {
+      "name": "worker-upstream-p95-high",
+      "metric": "server_timing_upstream_p95_ms",
+      "window": "10m",
+      "threshold": 1200,
+      "consecutive_windows": 1,
+      "severity": "critical",
+      "notification_targets": ["slack:#oncall", "pagerduty:edge-primary"]
+    }
+  ]
+}

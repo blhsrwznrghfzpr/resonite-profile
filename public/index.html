@@ -559,7 +559,11 @@
     </div>
 
     <script>
-      const API_BASE = '/api/users';
+      const API_BASE_URL = window.__API_BASE_URL__ || '';
+
+      function apiUrl(path) {
+        return `${API_BASE_URL}${path}`;
+      }
 
       const searchInput = document.getElementById('searchInput');
       const searchBtn = document.getElementById('searchBtn');
@@ -591,7 +595,7 @@
         searchResults.innerHTML = '<div class="loading">検索中...</div>';
 
         try {
-          const url = `${API_BASE}?name=${encodeURIComponent(query)}`;
+          const url = apiUrl(`/api/users?name=${encodeURIComponent(query)}`);
           const response = await fetch(url);
 
           if (!response.ok) {
@@ -681,7 +685,7 @@
 
           // ユーザー情報を取得
           const userResponse = await fetch(
-            `/api/users/${encodeURIComponent(userId)}`
+            apiUrl(`/api/users/${encodeURIComponent(userId)}`)
           );
 
           if (!userResponse.ok) {
@@ -693,7 +697,7 @@
           // セッション情報を取得
           let currentSession = null;
           try {
-            const sessionResponse = await fetch('/api/sessions');
+            const sessionResponse = await fetch(apiUrl('/api/sessions'));
             if (sessionResponse.ok) {
               const sessions = await sessionResponse.json();
               // ユーザーが参加しているセッションを検索
@@ -722,14 +726,16 @@
       function updateMetaTags(user) {
         const username = user.username || 'Unknown User';
         const avatarUrl = convertIconUrl(user.profile?.iconUrl);
-        
+
         // ユーザー情報からdescriptionを生成
-        const registrationDate = new Date(user.registrationDate).toLocaleDateString('ja-JP');
+        const registrationDate = new Date(
+          user.registrationDate
+        ).toLocaleDateString('ja-JP');
         let description = `${username} • ${registrationDate}登録`;
-        
+
         // タイトルを更新
         document.title = `${username} - Resonite Profile`;
-        
+
         // OGPタグを更新（既存のものがあれば削除して新規作成）
         const metaTags = [
           { property: 'og:title', content: `${username} - Resonite Profile` },
@@ -741,14 +747,16 @@
           { name: 'twitter:card', content: 'summary' },
           { name: 'twitter:title', content: `${username} - Resonite Profile` },
           { name: 'twitter:description', content: description },
-          { name: 'twitter:image', content: avatarUrl }
+          { name: 'twitter:image', content: avatarUrl },
         ];
-        
+
         // 既存のOGPタグを削除
-        document.querySelectorAll('meta[property^="og:"], meta[name^="twitter:"]').forEach(tag => {
-          tag.remove();
-        });
-        
+        document
+          .querySelectorAll('meta[property^="og:"], meta[name^="twitter:"]')
+          .forEach(tag => {
+            tag.remove();
+          });
+
         // 新しいメタタグを追加
         metaTags.forEach(tagData => {
           const meta = document.createElement('meta');
@@ -922,7 +930,7 @@
       // ユーザーのワールドを読み込み
       async function loadUserWorlds(userId) {
         try {
-          const response = await fetch('/api/worlds', {
+          const response = await fetch(apiUrl('/api/worlds'), {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -1004,12 +1012,14 @@
         currentView = 'search';
         currentUser = null;
         searchResults.innerHTML = '';
-        
+
         // メタタグをリセット
         document.title = 'Resonite ユーザー検索';
-        document.querySelectorAll('meta[property^="og:"], meta[name^="twitter:"]').forEach(tag => {
-          tag.remove();
-        });
+        document
+          .querySelectorAll('meta[property^="og:"], meta[name^="twitter:"]')
+          .forEach(tag => {
+            tag.remove();
+          });
       }
 
       // バイト数フォーマット

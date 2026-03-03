@@ -6,7 +6,7 @@ export default [
   js.configs.recommended,
   prettierConfig,
   {
-    files: ['**/*.js'],
+    files: ['**/*.{js,mjs}'],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'module',
@@ -16,6 +16,13 @@ export default [
         console: 'readonly',
         fetch: 'readonly',
         URLSearchParams: 'readonly',
+        URL: 'readonly',
+        Request: 'readonly',
+        Response: 'readonly',
+        AbortController: 'readonly',
+        caches: 'readonly',
+        Headers: 'readonly',
+        crypto: 'readonly',
         setTimeout: 'readonly',
         clearTimeout: 'readonly',
         setInterval: 'readonly',

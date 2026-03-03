@@ -15,3 +15,11 @@ coverage/
 .env.production.local
 dist/
 build/
+# rollout/generated local reports
+docs/staging-smoke-report.md
+docs/staging-smoke-report.json
+docs/worker-rollout-docs-verify.json
+docs/worker-rollout-open-items.json
+docs/worker-rollout-status.json
+docs/worker-rollout-status.md
+docs/worker-rollout-overview.json
