@@ -38,6 +38,12 @@ npm start
 
 アプリは `http://localhost:3000` でアクセス可能です。
 
+4. Cloudflare Workersのローカル実行（移行実装中）:
+
+```bash
+npm run dev:worker
+```
+
 ## ディレクトリ構成
 
 ```
@@ -45,6 +51,8 @@ npm start
 ├── server.js          # Express サーバー
 ├── package.json       # パッケージ設定
 ├── package-lock.json  # 依存関係のロックファイル
+├── worker.js          # Cloudflare Workersエントリポイント
+├── wrangler.toml      # Workers設定
 ├── public/            # 静的ファイル
 │   ├── index.html     # フロントエンドアプリ
 │   └── js/
