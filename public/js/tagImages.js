@@ -230,3 +230,5 @@ function getTagIcon(tagName) {
   // そうでなければassets.resonite.comのハッシュとして扱う
   return `https://assets.resonite.com/${imageValue}`;
 }
+
+window.getTagIcon = getTagIcon;
