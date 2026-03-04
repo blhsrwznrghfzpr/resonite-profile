@@ -25,7 +25,9 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260305.0",
+    "@eth0fox/tsrl": "^2.0.0",
     "@preact/preset-vite": "^2.10.3",
+    "@types/ws": "^8.18.1",
     "eslint": "^9.29.0",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-prettier": "^5.5.0",
