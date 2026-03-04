@@ -2,12 +2,17 @@ import { ResoniteLink, type Slot } from '@eth0fox/tsrl';
 import { WebSocket } from 'ws';
 
 // Don't forget to change this! This is different every time you enable ResoniteLink
-const PORT = 56795;
+const PORT = 49210;
 
-const link = await ResoniteLink.connect(
-  `ws://127.0.0.1:${PORT}`,
-  WebSocket as any
-);
+let link: ResoniteLink;
+try {
+  link = await ResoniteLink.connect(`ws://127.0.0.1:${PORT}`, WebSocket as any);
+} catch (e) {
+  const msg = e != null && typeof e === 'object' && 'message' in e ? String((e as any).message) : String(e);
+  console.error(`Failed to connect to ResoniteLink on port ${PORT}: ${msg}`);
+  console.error('Make sure Resonite is running and ResoniteLink is enabled (Session tab > Enable ResoniteLink).');
+  process.exit(1);
+}
 console.log('Connected to ResoniteLink!');
 
 const printSlot = (slots: Slot[], depth?: number) => {
