@@ -6,7 +6,7 @@ const PORT = 49210;
 
 let link: ResoniteLink;
 try {
-  link = await ResoniteLink.connect(`ws://127.0.0.1:${PORT}`, WebSocket as any);
+  link = await ResoniteLink.connect(`ws://localhost:${PORT}`, WebSocket as any);
 } catch (e) {
   const msg = e != null && typeof e === 'object' && 'message' in e ? String((e as any).message) : String(e);
   console.error(`Failed to connect to ResoniteLink on port ${PORT}: ${msg}`);
