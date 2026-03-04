@@ -1,4 +1,9 @@
-import type { Env, RateLimitConfig, RateLimitState, RuntimeConfig } from '../types.ts';
+import type {
+  Env,
+  RateLimitConfig,
+  RateLimitState,
+  RuntimeConfig,
+} from '../types.ts';
 import {
   asHeadResponse,
   methodNotAllowed,

@@ -15,6 +15,7 @@ coverage/
 .env.production.local
 dist/
 build/
+.wrangler/
 # generated local reports
 docs/staging-smoke-report.md
 docs/staging-smoke-report.json

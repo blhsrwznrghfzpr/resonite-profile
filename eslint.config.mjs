@@ -3,6 +3,7 @@ import prettier from 'eslint-plugin-prettier';
 import prettierConfig from 'eslint-config-prettier';
 
 export default [
+  { ignores: ['dist/**', '.wrangler/**'] },
   js.configs.recommended,
   prettierConfig,
   {

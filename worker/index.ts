@@ -1,5 +1,10 @@
 import { Hono } from 'hono';
-import type { Env, RateLimitState, RateLimitConfig, RuntimeConfig } from './types.ts';
+import type {
+  Env,
+  RateLimitState,
+  RateLimitConfig,
+  RuntimeConfig,
+} from './types.ts';
 import { getRuntimeConfig } from './lib/config.ts';
 import {
   withRequestId,
@@ -10,7 +15,11 @@ import {
   methodNotAllowed,
   attachRateLimitHeaders,
 } from './lib/response.ts';
-import { isOriginAllowed, withCors, optionsResponse } from './middleware/cors.ts';
+import {
+  isOriginAllowed,
+  withCors,
+  optionsResponse,
+} from './middleware/cors.ts';
 import { getRateLimitConfig, checkRateLimit } from './middleware/rateLimit.ts';
 import { handleHealth } from './routes/health.ts';
 import { handleUsers, handleUserDetail } from './routes/users.ts';

@@ -8,9 +8,14 @@ let link: ResoniteLink;
 try {
   link = await ResoniteLink.connect(`ws://localhost:${PORT}`, WebSocket as any);
 } catch (e) {
-  const msg = e != null && typeof e === 'object' && 'message' in e ? String((e as any).message) : String(e);
+  const msg =
+    e != null && typeof e === 'object' && 'message' in e
+      ? String((e as any).message)
+      : String(e);
   console.error(`Failed to connect to ResoniteLink on port ${PORT}: ${msg}`);
-  console.error('Make sure Resonite is running and ResoniteLink is enabled (Session tab > Enable ResoniteLink).');
+  console.error(
+    'Make sure Resonite is running and ResoniteLink is enabled (Session tab > Enable ResoniteLink).'
+  );
   process.exit(1);
 }
 console.log('Connected to ResoniteLink!');

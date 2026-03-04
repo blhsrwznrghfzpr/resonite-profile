@@ -3,7 +3,12 @@ import {
   USER_SEARCH_CACHE_CONTROL,
   USER_DETAIL_CACHE_CONTROL,
 } from '../constants.ts';
-import type { Env, RateLimitConfig, RateLimitState, RuntimeConfig } from '../types.ts';
+import type {
+  Env,
+  RateLimitConfig,
+  RateLimitState,
+  RuntimeConfig,
+} from '../types.ts';
 import {
   errorResponse,
   asHeadResponse,

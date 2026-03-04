@@ -1,8 +1,6 @@
 import { DEFAULT_AVATAR_URL } from '../constants.ts';
 
-export function convertIconUrl(
-  iconUrl: string | undefined | null
-): string {
+export function convertIconUrl(iconUrl: string | undefined | null): string {
   if (!iconUrl) return DEFAULT_AVATAR_URL;
 
   if (iconUrl.startsWith('resdb:///')) {

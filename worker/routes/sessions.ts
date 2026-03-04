@@ -1,5 +1,10 @@
 import { RESONITE_API_BASE, SESSIONS_CACHE_CONTROL } from '../constants.ts';
-import type { Env, RateLimitConfig, RateLimitState, RuntimeConfig } from '../types.ts';
+import type {
+  Env,
+  RateLimitConfig,
+  RateLimitState,
+  RuntimeConfig,
+} from '../types.ts';
 import {
   asHeadResponse,
   isGetLikeMethod,
