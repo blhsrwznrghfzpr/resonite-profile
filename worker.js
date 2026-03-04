@@ -620,7 +620,12 @@ async function handleApi(request, pathname, searchParams, env, requestId) {
 
   if (!isOriginAllowed(request, env)) {
     return asHeadResponse(
-      withCors(errorResponse(403, 'Origin not allowed'), request, env, requestId),
+      withCors(
+        errorResponse(403, 'Origin not allowed'),
+        request,
+        env,
+        requestId
+      ),
       request.method
     );
   }
@@ -628,12 +633,21 @@ async function handleApi(request, pathname, searchParams, env, requestId) {
   // /api/health is exempt from rate limiting
   if (pathname === '/api/health') {
     if (!isGetLikeMethod(request.method)) {
-      return withCors(methodNotAllowed(['GET', 'HEAD']), request, env, requestId);
+      return withCors(
+        methodNotAllowed(['GET', 'HEAD']),
+        request,
+        env,
+        requestId
+      );
     }
     return asHeadResponse(
       withCors(
         jsonResponse(
-          { status: 'ok', service: 'resonite-profile-worker', now: new Date().toISOString() },
+          {
+            status: 'ok',
+            service: 'resonite-profile-worker',
+            now: new Date().toISOString(),
+          },
           200,
           { 'Cache-Control': 'no-store' }
         ),
@@ -679,7 +693,12 @@ async function handleApi(request, pathname, searchParams, env, requestId) {
     const name = searchParams.get('name');
     if (!name) {
       return asHeadResponse(
-        withCors(errorResponse(400, 'Name parameter is required'), request, env, requestId),
+        withCors(
+          errorResponse(400, 'Name parameter is required'),
+          request,
+          env,
+          requestId
+        ),
         request.method
       );
     }
@@ -691,7 +710,12 @@ async function handleApi(request, pathname, searchParams, env, requestId) {
       { kvNamespace: env.SEARCH_CACHE, requestId }
     );
     return asHeadResponse(
-      withCors(attachRateLimitHeaders(response, rateState, rateLimitConfig), request, env, requestId),
+      withCors(
+        attachRateLimitHeaders(response, rateState, rateLimitConfig),
+        request,
+        env,
+        requestId
+      ),
       request.method
     );
   }
@@ -706,7 +730,12 @@ async function handleApi(request, pathname, searchParams, env, requestId) {
     const userId = pathname.replace('/api/users/', '');
     if (!userId) {
       return asHeadResponse(
-        withCors(errorResponse(400, 'User ID is required'), request, env, requestId),
+        withCors(
+          errorResponse(400, 'User ID is required'),
+          request,
+          env,
+          requestId
+        ),
         request.method
       );
     }
@@ -718,7 +747,12 @@ async function handleApi(request, pathname, searchParams, env, requestId) {
       { requestId }
     );
     return asHeadResponse(
-      withCors(attachRateLimitHeaders(response, rateState, rateLimitConfig), request, env, requestId),
+      withCors(
+        attachRateLimitHeaders(response, rateState, rateLimitConfig),
+        request,
+        env,
+        requestId
+      ),
       request.method
     );
   }
@@ -738,7 +772,12 @@ async function handleApi(request, pathname, searchParams, env, requestId) {
       { requestId }
     );
     return asHeadResponse(
-      withCors(attachRateLimitHeaders(response, rateState, rateLimitConfig), request, env, requestId),
+      withCors(
+        attachRateLimitHeaders(response, rateState, rateLimitConfig),
+        request,
+        env,
+        requestId
+      ),
       request.method
     );
   }
@@ -761,7 +800,11 @@ async function handleApi(request, pathname, searchParams, env, requestId) {
 
   return asHeadResponse(
     withCors(
-      attachRateLimitHeaders(errorResponse(404, 'Not Found'), rateState, rateLimitConfig),
+      attachRateLimitHeaders(
+        errorResponse(404, 'Not Found'),
+        rateState,
+        rateLimitConfig
+      ),
       request,
       env,
       requestId

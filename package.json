@@ -2,18 +2,15 @@
   "name": "resonite-profile",
   "version": "1.0.0",
   "description": "Resonite user search application",
-  "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
+    "dev:worker": "wrangler dev",
+    "deploy:worker": "wrangler deploy",
     "build": "echo 'do nothing'",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky",
-    "dev:worker": "wrangler dev",
-    "deploy:worker": "wrangler deploy",
     "test:worker": "node --experimental-default-type=module --test tests/worker.test.mjs",
     "test:staging-smoke": "bash scripts/staging-smoke-check.sh",
     "test:staging-smoke:dry": "DRY_RUN=1 bash scripts/staging-smoke-check.sh",
@@ -25,23 +22,18 @@
     "test:staging-smoke:pipeline": "bash scripts/run-staging-smoke-pipeline.sh .env.staging-smoke normal",
     "test:alerts:validate": "bash scripts/validate-cloudflare-alert-thresholds.sh docs/cloudflare-alert-thresholds-template.json"
   },
-  "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^4.18.2"
-  },
   "devDependencies": {
     "eslint": "^9.29.0",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-prettier": "^5.5.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.2",
-    "nodemon": "^3.0.1",
     "prettier": "^3.6.0",
     "resonitelink.js": "file:./ResoniteLink.js",
     "wrangler": "^4.33.0"
   },
   "lint-staged": {
-    "*.js": [
+    "*.{js,mjs}": [
       "eslint --fix",
       "prettier --write"
     ],

@@ -12,28 +12,28 @@
 
 ### セキュリティ
 
-| 箇所 | 問題 | 深刻度 |
-|------|------|--------|
-| `public/index.html` L622-668 | `innerHTML` に `user.username` 等を未エスケープで展開 → XSS | **高** |
-| `public/index.html` L786-893 | 詳細表示でも同様に `innerHTML` + テンプレートリテラル → XSS | **高** |
-| `public/index.html` L917-928 | `stripAllTags()` が正規表現ベースで不完全（ネストタグ等を突破可能） | 中 |
+| 箇所                         | 問題                                                                | 深刻度 |
+| ---------------------------- | ------------------------------------------------------------------- | ------ |
+| `public/index.html` L622-668 | `innerHTML` に `user.username` 等を未エスケープで展開 → XSS         | **高** |
+| `public/index.html` L786-893 | 詳細表示でも同様に `innerHTML` + テンプレートリテラル → XSS         | **高** |
+| `public/index.html` L917-928 | `stripAllTags()` が正規表現ベースで不完全（ネストタグ等を突破可能） | 中     |
 
 ### 保守性
 
-| 箇所 | 問題 |
-|------|------|
-| `public/index.html` (1,106行) | HTML・CSS・JS が全て1ファイルに混在 |
-| `worker.js` (795行) | ルーティング・キャッシュ・レートリミット・CORS・OGP が単一ファイル |
-| `convertIconUrl` | `worker.js` L170-180 と `index.html` L576-587 に同一ロジックが重複 |
-| `public/js/tagImages.js` | `window.getTagIcon` でグローバル名前空間を汚染 |
-| 型安全性 | Worker 全体が JavaScript で型チェックなし |
+| 箇所                          | 問題                                                               |
+| ----------------------------- | ------------------------------------------------------------------ |
+| `public/index.html` (1,106行) | HTML・CSS・JS が全て1ファイルに混在                                |
+| `worker.js` (795行)           | ルーティング・キャッシュ・レートリミット・CORS・OGP が単一ファイル |
+| `convertIconUrl`              | `worker.js` L170-180 と `index.html` L576-587 に同一ロジックが重複 |
+| `public/js/tagImages.js`      | `window.getTagIcon` でグローバル名前空間を汚染                     |
+| 型安全性                      | Worker 全体が JavaScript で型チェックなし                          |
 
 ### デッドコード
 
-| ファイル | 状態 |
-|----------|------|
-| `server.js` | 旧 Express バックエンド。本番では未使用（Worker に移行済み） |
-| `package.json` の `express`, `cors` | `server.js` 専用の依存。Worker では不要 |
+| ファイル                            | 状態                                                         |
+| ----------------------------------- | ------------------------------------------------------------ |
+| `server.js`                         | 旧 Express バックエンド。本番では未使用（Worker に移行済み） |
+| `package.json` の `express`, `cors` | `server.js` 専用の依存。Worker では不要                      |
 
 > **注**: `getBadgeTexture.ts` はビルドパイプライン外ですが、デッドコードではありません。
 > Resonite ゲームクライアントに ResoniteLink 経由で接続し、バッジの `StaticTexture2D` テクスチャ URL を採取する**開発者用の手動実行スクリプト**です。
@@ -53,6 +53,7 @@ Phase 4  Vite + Preact 導入（フロントエンド再構築）
 ```
 
 各フェーズの完了条件:
+
 - 既存テスト（`npm run test:worker`）が全件パス
 - `npm run lint` がエラーなし
 - `npm run format:check` がエラーなし
@@ -81,11 +82,11 @@ Phase 4  Vite + Preact 導入（フロントエンド再構築）
 
 ### 変更対象ファイル
 
-| 操作 | ファイル |
-|------|----------|
-| 削除 | `server.js` |
+| 操作         | ファイル                                          |
+| ------------ | ------------------------------------------------- |
+| 削除         | `server.js`                                       |
 | 移動（任意） | `getBadgeTexture.ts` → `tools/getBadgeTexture.ts` |
-| 編集 | `package.json` |
+| 編集         | `package.json`                                    |
 
 ### 完了条件
 
@@ -102,6 +103,7 @@ Phase 4  Vite + Preact 導入（フロントエンド再構築）
 ### 作業内容
 
 1. **テキストエスケープ関数の追加**
+
    ```js
    function escapeHtml(str) {
      const div = document.createElement('div');
@@ -123,8 +125,8 @@ Phase 4  Vite + Preact 導入（フロントエンド再構築）
 
 ### 変更対象ファイル
 
-| 操作 | ファイル |
-|------|----------|
+| 操作 | ファイル            |
+| ---- | ------------------- |
 | 編集 | `public/index.html` |
 
 ### 完了条件
@@ -189,18 +191,18 @@ worker/
 
 ### 変更対象ファイル
 
-| 操作 | ファイル |
-|------|----------|
-| 削除 | `worker.js` |
-| 新規 | `worker/index.ts`, `worker/types.ts`, `worker/constants.ts` |
-| 新規 | `worker/middleware/cors.ts`, `worker/middleware/rateLimit.ts`, `worker/middleware/security.ts` |
+| 操作 | ファイル                                                                                                                            |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| 削除 | `worker.js`                                                                                                                         |
+| 新規 | `worker/index.ts`, `worker/types.ts`, `worker/constants.ts`                                                                         |
+| 新規 | `worker/middleware/cors.ts`, `worker/middleware/rateLimit.ts`, `worker/middleware/security.ts`                                      |
 | 新規 | `worker/routes/health.ts`, `worker/routes/users.ts`, `worker/routes/sessions.ts`, `worker/routes/worlds.ts`, `worker/routes/ogp.ts` |
-| 新規 | `worker/lib/cache.ts`, `worker/lib/proxy.ts`, `worker/lib/response.ts`, `worker/lib/url.ts` |
-| 新規 | `tsconfig.json` |
-| 編集 | `wrangler.toml` (`main` パス変更) |
-| 編集 | `package.json` (devDependencies, scripts, lint-staged) |
-| 編集 | `eslint.config.mjs` (TypeScript 対応) |
-| 編集 | `tests/worker.test.mjs` (import パス調整) |
+| 新規 | `worker/lib/cache.ts`, `worker/lib/proxy.ts`, `worker/lib/response.ts`, `worker/lib/url.ts`                                         |
+| 新規 | `tsconfig.json`                                                                                                                     |
+| 編集 | `wrangler.toml` (`main` パス変更)                                                                                                   |
+| 編集 | `package.json` (devDependencies, scripts, lint-staged)                                                                              |
+| 編集 | `eslint.config.mjs` (TypeScript 対応)                                                                                               |
+| 編集 | `tests/worker.test.mjs` (import パス調整)                                                                                           |
 
 ### 完了条件
 
@@ -225,11 +227,13 @@ worker/
 ### 作業内容
 
 1. **Hono のインストール**
+
    ```bash
    npm install hono
    ```
 
 2. **エントリポイントの書き換え** (`worker/index.ts`)
+
    ```ts
    import { Hono } from 'hono';
    import { cors } from './middleware/cors';
@@ -257,13 +261,13 @@ worker/
 
 ### 変更対象ファイル
 
-| 操作 | ファイル |
-|------|----------|
-| 編集 | `worker/index.ts` (全面書き換え) |
+| 操作 | ファイル                                           |
+| ---- | -------------------------------------------------- |
+| 編集 | `worker/index.ts` (全面書き換え)                   |
 | 編集 | `worker/middleware/*.ts` (Hono ミドルウェア形式に) |
-| 編集 | `worker/routes/*.ts` (Hono ルートハンドラ形式に) |
+| 編集 | `worker/routes/*.ts` (Hono ルートハンドラ形式に)   |
 | 編集 | `tests/worker.test.mjs` (テスト呼び出し方法の変更) |
-| 編集 | `package.json` (hono 追加) |
+| 編集 | `package.json` (hono 追加)                         |
 
 ### 完了条件
 
@@ -279,12 +283,12 @@ worker/
 
 ### 技術選定の理由
 
-| 項目 | 選定 | 理由 |
-|------|------|------|
-| UIライブラリ | Preact | バンドルサイズ ~3KB、JSX による自動エスケープ |
-| ビルドツール | Vite | Wrangler v4 が内蔵 Vite をサポート、HMR が高速 |
-| ルーティング | preact-iso または手動 | 2画面（検索/詳細）だけなので軽量で十分 |
-| 状態管理 | Preact Signals | 軽量で Preact との相性が良い |
+| 項目         | 選定                  | 理由                                           |
+| ------------ | --------------------- | ---------------------------------------------- |
+| UIライブラリ | Preact                | バンドルサイズ ~3KB、JSX による自動エスケープ  |
+| ビルドツール | Vite                  | Wrangler v4 が内蔵 Vite をサポート、HMR が高速 |
+| ルーティング | preact-iso または手動 | 2画面（検索/詳細）だけなので軽量で十分         |
+| 状態管理     | Preact Signals        | 軽量で Preact との相性が良い                   |
 
 ### 最終ディレクトリ構成
 
@@ -350,18 +354,18 @@ src/
 
 ### 変更対象ファイル
 
-| 操作 | ファイル |
-|------|----------|
-| 削除 | `public/index.html` |
-| 削除 | `public/js/tagImages.js` |
-| 新規 | `src/` 以下すべて |
-| 新規 | `vite.config.ts` |
-| 新規 | `shared/url.ts`（共有ユーティリティ） |
-| 編集 | `wrangler.toml` (`[assets] directory` → `"./dist"`) |
-| 編集 | `worker/lib/url.ts` (`shared/url.ts` を re-export) |
-| 編集 | `worker/routes/ogp.ts` (ビルド済み HTML のパスが変わる場合) |
+| 操作 | ファイル                                                                   |
+| ---- | -------------------------------------------------------------------------- |
+| 削除 | `public/index.html`                                                        |
+| 削除 | `public/js/tagImages.js`                                                   |
+| 新規 | `src/` 以下すべて                                                          |
+| 新規 | `vite.config.ts`                                                           |
+| 新規 | `shared/url.ts`（共有ユーティリティ）                                      |
+| 編集 | `wrangler.toml` (`[assets] directory` → `"./dist"`)                        |
+| 編集 | `worker/lib/url.ts` (`shared/url.ts` を re-export)                         |
+| 編集 | `worker/routes/ogp.ts` (ビルド済み HTML のパスが変わる場合)                |
 | 編集 | `package.json` (preact, vite, @preact/preset-vite 追加、build script 追加) |
-| 編集 | `tsconfig.json` (JSX 設定追加) |
+| 編集 | `tsconfig.json` (JSX 設定追加)                                             |
 
 ### 完了条件
 
@@ -378,35 +382,35 @@ src/
 
 以下は検討した上で、現時点では **スコープ外** とします。
 
-| 項目 | 理由 |
-|------|------|
-| Durable Objects によるグローバルレートリミット | コストに見合わない。per-isolate で十分 |
-| Cloudflare Pages への移行 | Workers + Assets で静的配信は既に CDN エッジ。移行メリットが薄い |
-| React / Vue / Svelte | Preact の ~3KB で十分。フレームワークの重さが不要 |
-| GraphQL 化 | API エンドポイントが 5 つのみ。REST で十分 |
-| モノレポ化（Turborepo 等） | Worker + フロントエンドの 2 パッケージ程度では過剰 |
-| E2E テスト（Playwright 等）の導入 | 有用だが本リファクタリングのスコープ外。別途検討 |
+| 項目                                           | 理由                                                             |
+| ---------------------------------------------- | ---------------------------------------------------------------- |
+| Durable Objects によるグローバルレートリミット | コストに見合わない。per-isolate で十分                           |
+| Cloudflare Pages への移行                      | Workers + Assets で静的配信は既に CDN エッジ。移行メリットが薄い |
+| React / Vue / Svelte                           | Preact の ~3KB で十分。フレームワークの重さが不要                |
+| GraphQL 化                                     | API エンドポイントが 5 つのみ。REST で十分                       |
+| モノレポ化（Turborepo 等）                     | Worker + フロントエンドの 2 パッケージ程度では過剰               |
+| E2E テスト（Playwright 等）の導入              | 有用だが本リファクタリングのスコープ外。別途検討                 |
 
 ---
 
 ## リスクと対策
 
-| リスク | 影響 | 対策 |
-|--------|------|------|
-| Phase 2 でテストが import パス変更により壊れる | テスト不能期間が発生 | Wrangler ビルド出力を `dist/worker.js` に固定し、テストはそれを import。段階的に移行 |
-| Phase 3 の Hono 導入でレスポンスヘッダーが微妙に変わる | ステージングスモークテストが失敗 | Hono 導入前後でレスポンスヘッダーの diff を取り、完全一致を確認 |
-| Phase 4 の Preact 導入でバンドルサイズが増加 | 初回ロード性能が劣化 | Vite のバンドル分析（`rollup-plugin-visualizer`）で監視。目標: gzip 後 30KB 以下 |
-| OGP 生成の `<title>` 置換が Vite ビルド後の HTML で動かない | SNS シェア時にメタ情報が欠落 | Vite ビルド後の HTML に `<title>Resonite ユーザー検索</title>` が含まれることをテストで保証 |
+| リスク                                                      | 影響                             | 対策                                                                                        |
+| ----------------------------------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------- |
+| Phase 2 でテストが import パス変更により壊れる              | テスト不能期間が発生             | Wrangler ビルド出力を `dist/worker.js` に固定し、テストはそれを import。段階的に移行        |
+| Phase 3 の Hono 導入でレスポンスヘッダーが微妙に変わる      | ステージングスモークテストが失敗 | Hono 導入前後でレスポンスヘッダーの diff を取り、完全一致を確認                             |
+| Phase 4 の Preact 導入でバンドルサイズが増加                | 初回ロード性能が劣化             | Vite のバンドル分析（`rollup-plugin-visualizer`）で監視。目標: gzip 後 30KB 以下            |
+| OGP 生成の `<title>` 置換が Vite ビルド後の HTML で動かない | SNS シェア時にメタ情報が欠落     | Vite ビルド後の HTML に `<title>Resonite ユーザー検索</title>` が含まれることをテストで保証 |
 
 ---
 
 ## 参考: 現在のファイルサイズ
 
-| ファイル | 行数 | リファクタ後 |
-|----------|------|-------------|
-| `worker.js` | 795 | → `worker/` 以下に 12 ファイルへ分割 |
-| `public/index.html` | 1,106 | → `src/` 以下に ~15 ファイルへ分割 |
-| `public/js/tagImages.js` | 234 | → `src/data/tagImages.ts` に移動 |
-| `server.js` | 181 | → 削除 |
-| `getBadgeTexture.ts` | - | → 削除 |
-| `tests/worker.test.mjs` | 1,424 | → import パス調整 + Hono 対応 |
+| ファイル                 | 行数  | リファクタ後                                      |
+| ------------------------ | ----- | ------------------------------------------------- |
+| `worker.js`              | 795   | → `worker/` 以下に 12 ファイルへ分割              |
+| `public/index.html`      | 1,106 | → `src/` 以下に ~15 ファイルへ分割                |
+| `public/js/tagImages.js` | 234   | → `src/data/tagImages.ts` に移動                  |
+| `server.js`              | 181   | → 削除                                            |
+| `getBadgeTexture.ts`     | -     | → `tools/getBadgeTexture.ts` へ移動（削除しない） |
+| `tests/worker.test.mjs`  | 1,424 | → import パス調整 + Hono 対応                     |
