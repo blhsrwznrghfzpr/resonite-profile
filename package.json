@@ -2,38 +2,57 @@
   "name": "resonite-profile",
   "version": "1.0.0",
   "description": "Resonite user search application",
-  "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
-    "build": "echo 'do nothing'",
+    "dev:worker": "wrangler dev",
+    "deploy:worker": "wrangler deploy",
+    "build": "vite build",
+    "dev:frontend": "vite",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "prepare": "husky"
-  },
-  "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^4.18.2"
+    "prepare": "husky",
+    "test:worker": "node --experimental-strip-types --experimental-default-type=module --test tests/worker.test.mjs",
+    "test:staging-smoke": "bash scripts/staging-smoke-check.sh",
+    "test:staging-smoke:dry": "DRY_RUN=1 bash scripts/staging-smoke-check.sh",
+    "test:staging-smoke:report": "STAGING_SMOKE_REPORT=docs/staging-smoke-report.md bash scripts/staging-smoke-check.sh",
+    "test:staging-smoke:json": "STAGING_SMOKE_JSON=docs/staging-smoke-report.json bash scripts/staging-smoke-check.sh",
+    "init:staging-smoke-env": "bash scripts/init-staging-smoke-env.sh .env.staging-smoke",
+    "test:staging-smoke:env:validate": "bash scripts/validate-staging-smoke-env.sh .env.staging-smoke",
+    "test:staging-smoke:env": "bash scripts/run-staging-smoke-from-env.sh docs/staging-smoke.env.example normal",
+    "test:staging-smoke:pipeline": "bash scripts/run-staging-smoke-pipeline.sh .env.staging-smoke normal",
+    "test:alerts:validate": "bash scripts/validate-cloudflare-alert-thresholds.sh docs/cloudflare-alert-thresholds-template.json"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260305.0",
+    "@preact/preset-vite": "^2.10.3",
     "eslint": "^9.29.0",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-prettier": "^5.5.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.2",
-    "nodemon": "^3.0.1",
     "prettier": "^3.6.0",
-    "resonitelink.js": "file:./ResoniteLink.js"
+    "resonitelink.js": "file:./ResoniteLink.js",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1",
+    "wrangler": "^4.33.0"
   },
   "lint-staged": {
-    "*.js": [
+    "*.{js,mjs}": [
       "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{ts,tsx}": [
       "prettier --write"
     ],
     "*.{json,md}": [
       "prettier --write"
     ]
+  },
+  "dependencies": {
+    "hono": "^4.12.4",
+    "preact": "^10.28.4",
+    "preact-iso": "^2.11.1"
   }
 }

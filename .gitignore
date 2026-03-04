@@ -15,3 +15,7 @@ coverage/
 .env.production.local
 dist/
 build/
+# generated local reports
+docs/staging-smoke-report.md
+docs/staging-smoke-report.json
+.env.staging-smoke

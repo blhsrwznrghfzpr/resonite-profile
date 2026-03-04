@@ -1,0 +1,14 @@
+name = "resonite-profile"
+main = "worker/index.ts"
+compatibility_date = "2025-01-01"
+
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+
+# KV namespace for search result caching (/api/users)
+# Create with: wrangler kv namespace create SEARCH_CACHE
+# Then replace the id below with the actual namespace ID from the output.
+[[kv_namespaces]]
+binding = "SEARCH_CACHE"
+id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
