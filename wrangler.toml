@@ -11,4 +11,4 @@ binding = "ASSETS"
 # Then replace the id below with the actual namespace ID from the output.
 [[kv_namespaces]]
 binding = "SEARCH_CACHE"
-id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+id = "af807d5ccda14587ae8d3c1423a67c68"
