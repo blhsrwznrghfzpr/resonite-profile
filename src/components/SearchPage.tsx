@@ -72,7 +72,7 @@ export function SearchPage(_: Props) {
               key={user.id}
               class="user-info"
               style="cursor: pointer;"
-              onClick={() => route(`/user/${encodeURIComponent(user.id)}`)}
+              onClick={() => route(`/${encodeURIComponent(user.id)}`)}
             >
               <div class="user-header">
                 <img

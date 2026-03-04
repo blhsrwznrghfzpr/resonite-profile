@@ -9,7 +9,7 @@ export function App() {
       <div class="container">
         <Header />
         <Router>
-          <UserDetailPage path="/user/:id" />
+          <UserDetailPage path="/:id" />
           <SearchPage default />
         </Router>
       </div>
