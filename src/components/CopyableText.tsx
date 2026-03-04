@@ -17,7 +17,17 @@ export function CopyableText({ text, class: className }: Props) {
       setFallback(false);
       setTimeout(() => setCopied(false), 1500);
     } catch {
-      setFallback(true);
+      // Fallback for non-HTTPS, denied permissions, or unsupported browsers
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      const success = document.execCommand('copy');
+      document.body.removeChild(textarea);
+      setFallback(!success);
       setCopied(true);
       setTimeout(() => {
         setCopied(false);
