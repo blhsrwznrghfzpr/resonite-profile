@@ -1,4 +1,5 @@
-import type { Env } from './types.ts';
+import { Hono } from 'hono';
+import type { Env, RateLimitState, RateLimitConfig, RuntimeConfig } from './types.ts';
 import { getRuntimeConfig } from './lib/config.ts';
 import {
   withRequestId,
@@ -17,52 +18,73 @@ import { handleSessions } from './routes/sessions.ts';
 import { handleWorlds } from './routes/worlds.ts';
 import { buildUserPage } from './routes/ogp.ts';
 
-function createRequestId(): string {
-  return crypto.randomUUID();
-}
+type Variables = {
+  requestId: string;
+  rateState: RateLimitState;
+  rateLimitConfig: RateLimitConfig;
+  runtimeConfig: RuntimeConfig;
+};
 
-async function handleApi(
-  request: Request,
-  pathname: string,
-  searchParams: URLSearchParams,
-  env: Env,
-  requestId: string
-): Promise<Response> {
-  if (request.method === 'OPTIONS') {
-    return optionsResponse(request, env, requestId);
-  }
+type HonoEnv = {
+  Bindings: Env;
+  Variables: Variables;
+};
 
-  if (!isOriginAllowed(request, env)) {
+const app = new Hono<HonoEnv>();
+
+// ─── Global: generate X-Request-Id for every request ─────────────────────────
+app.use('*', async (c, next) => {
+  c.set('requestId', crypto.randomUUID());
+  await next();
+});
+
+// ─── /api/*: OPTIONS preflight ────────────────────────────────────────────────
+// Handled before CORS middleware because optionsResponse() manages its own
+// origin check internally (returns 204 or 403 based on origin).
+app.options('/api/*', c =>
+  optionsResponse(c.req.raw, c.env, c.get('requestId'))
+);
+
+// ─── /api/*: CORS origin check ────────────────────────────────────────────────
+app.use('/api/*', async (c, next) => {
+  if (!isOriginAllowed(c.req.raw, c.env)) {
     return asHeadResponse(
       withCors(
         errorResponse(403, 'Origin not allowed'),
-        request,
-        env,
-        requestId
+        c.req.raw,
+        c.env,
+        c.get('requestId')
       ),
-      request.method
+      c.req.method
     );
   }
+  await next();
+});
 
-  // /api/health is exempt from rate limiting
-  if (pathname === '/api/health') {
-    if (!isGetLikeMethod(request.method)) {
-      return withCors(
-        methodNotAllowed(['GET', 'HEAD']),
-        request,
-        env,
-        requestId
-      );
-    }
-    return asHeadResponse(
-      withCors(handleHealth(), request, env, requestId),
-      request.method
+// ─── /api/health (rate-limit exempt) ─────────────────────────────────────────
+// Registered before the rate-limit middleware so it terminates the chain
+// without ever reaching that middleware.
+app.all('/api/health', c => {
+  const requestId = c.get('requestId');
+  if (!isGetLikeMethod(c.req.method)) {
+    return withCors(
+      methodNotAllowed(['GET', 'HEAD']),
+      c.req.raw,
+      c.env,
+      requestId
     );
   }
+  return asHeadResponse(
+    withCors(handleHealth(), c.req.raw, c.env, requestId),
+    c.req.method
+  );
+});
 
-  const runtimeConfig = getRuntimeConfig(env);
-  const rateLimitConfig = getRateLimitConfig(env);
-  const rateState = checkRateLimit(request, rateLimitConfig);
+// ─── /api/*: rate limiting ────────────────────────────────────────────────────
+// Runs after the health handler, so /api/health is always exempt.
+app.use('/api/*', async (c, next) => {
+  const rateLimitConfig = getRateLimitConfig(c.env);
+  const rateState = checkRateLimit(c.req.raw, rateLimitConfig);
 
   if (!rateState.ok) {
     const retryAfterSeconds = Math.max(
@@ -77,95 +99,104 @@ async function handleApi(
           'X-RateLimit-Remaining': '0',
           'X-RateLimit-Reset': String(Math.floor(rateState.resetAt / 1000)),
         }),
-        request,
-        env,
-        requestId
+        c.req.raw,
+        c.env,
+        c.get('requestId')
       ),
-      request.method
+      c.req.method
     );
   }
 
-  if (pathname === '/api/users') {
-    return handleUsers(
-      request,
-      searchParams,
-      env,
-      rateState,
-      rateLimitConfig,
-      runtimeConfig,
-      requestId
-    );
-  }
+  c.set('rateState', rateState);
+  c.set('rateLimitConfig', rateLimitConfig);
+  c.set('runtimeConfig', getRuntimeConfig(c.env));
+  await next();
+});
 
-  if (pathname.startsWith('/api/users/')) {
-    const userId = pathname.replace('/api/users/', '');
-    return handleUserDetail(
-      request,
-      userId,
-      env,
-      rateState,
-      rateLimitConfig,
-      runtimeConfig,
-      requestId
-    );
-  }
+// ─── API routes ───────────────────────────────────────────────────────────────
 
-  if (pathname === '/api/sessions') {
-    return handleSessions(
-      request,
-      env,
-      rateState,
-      rateLimitConfig,
-      runtimeConfig,
-      requestId
-    );
-  }
+app.all('/api/users', async c => {
+  const searchParams = new URL(c.req.url).searchParams;
+  return handleUsers(
+    c.req.raw,
+    searchParams,
+    c.env,
+    c.get('rateState'),
+    c.get('rateLimitConfig'),
+    c.get('runtimeConfig'),
+    c.get('requestId')
+  );
+});
 
-  if (pathname === '/api/worlds') {
-    return handleWorlds(
-      request,
-      env,
-      rateState,
-      rateLimitConfig,
-      runtimeConfig,
-      requestId
-    );
-  }
+// /api/users/ (trailing slash) and /api/users/:id — both delegate to handleUserDetail.
+// handleUserDetail returns 400 when userId is empty, which covers the /api/users/ case.
+app.all('/api/users/*', async c => {
+  const userId = c.req.path.slice('/api/users/'.length);
+  return handleUserDetail(
+    c.req.raw,
+    userId,
+    c.env,
+    c.get('rateState'),
+    c.get('rateLimitConfig'),
+    c.get('runtimeConfig'),
+    c.get('requestId')
+  );
+});
 
+app.all('/api/sessions', async c =>
+  handleSessions(
+    c.req.raw,
+    c.env,
+    c.get('rateState'),
+    c.get('rateLimitConfig'),
+    c.get('runtimeConfig'),
+    c.get('requestId')
+  )
+);
+
+app.all('/api/worlds', async c =>
+  handleWorlds(
+    c.req.raw,
+    c.env,
+    c.get('rateState'),
+    c.get('rateLimitConfig'),
+    c.get('runtimeConfig'),
+    c.get('requestId')
+  )
+);
+
+// Catch-all for unknown /api/* routes: return 404 with rate-limit headers
+app.all('/api/*', c => {
+  const requestId = c.get('requestId');
   return asHeadResponse(
     withCors(
       attachRateLimitHeaders(
         errorResponse(404, 'Not Found'),
-        rateState,
-        rateLimitConfig
+        c.get('rateState'),
+        c.get('rateLimitConfig')
       ),
-      request,
-      env,
+      c.req.raw,
+      c.env,
       requestId
     ),
-    request.method
+    c.req.method
   );
-}
+});
 
-export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
-    const url = new URL(request.url);
-    const { pathname, searchParams } = url;
-    const requestId = createRequestId();
+// ─── OGP pages ────────────────────────────────────────────────────────────────
 
-    if (pathname.startsWith('/api/')) {
-      return handleApi(request, pathname, searchParams, env, requestId);
-    }
+app.get('/user/:id', async c => {
+  const userId = c.req.param('id');
+  const requestId = c.get('requestId');
+  const response = await buildUserPage(c.req.raw, c.env, userId);
+  return withRequestId(response, requestId);
+});
 
-    if (pathname.startsWith('/user/')) {
-      const userId = pathname.replace('/user/', '');
-      if (userId) {
-        const response = await buildUserPage(request, env, userId);
-        return withRequestId(response, requestId);
-      }
-    }
+// ─── Static assets (Cloudflare Assets binding) ───────────────────────────────
 
-    const response = await env.ASSETS.fetch(request);
-    return withRequestId(response, requestId);
-  },
-};
+app.all('*', async c => {
+  const response = await c.env.ASSETS.fetch(c.req.raw);
+  return withRequestId(response, c.get('requestId'));
+});
+
+export default app;
