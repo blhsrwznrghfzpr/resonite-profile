@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import worker from '../worker.js';
+import worker from '../worker/index.ts';
 
 function createEnv(overrides = {}) {
   return {

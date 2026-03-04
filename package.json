@@ -11,7 +11,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky",
-    "test:worker": "node --experimental-default-type=module --test tests/worker.test.mjs",
+    "test:worker": "node --experimental-strip-types --experimental-default-type=module --test tests/worker.test.mjs",
     "test:staging-smoke": "bash scripts/staging-smoke-check.sh",
     "test:staging-smoke:dry": "DRY_RUN=1 bash scripts/staging-smoke-check.sh",
     "test:staging-smoke:report": "STAGING_SMOKE_REPORT=docs/staging-smoke-report.md bash scripts/staging-smoke-check.sh",
@@ -23,6 +23,7 @@
     "test:alerts:validate": "bash scripts/validate-cloudflare-alert-thresholds.sh docs/cloudflare-alert-thresholds-template.json"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260305.0",
     "eslint": "^9.29.0",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-prettier": "^5.5.0",
@@ -30,6 +31,8 @@
     "lint-staged": "^16.1.2",
     "prettier": "^3.6.0",
     "resonitelink.js": "file:./ResoniteLink.js",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
     "wrangler": "^4.33.0"
   },
   "lint-staged": {
