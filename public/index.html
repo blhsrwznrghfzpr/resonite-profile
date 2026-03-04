@@ -565,6 +565,23 @@
         return `${API_BASE_URL}${path}`;
       }
 
+      function escapeHtml(str) {
+        const node = document.createTextNode(String(str ?? ''));
+        const div = document.createElement('div');
+        div.appendChild(node);
+        return div.innerHTML;
+      }
+
+      function safeStripHtmlTags(text) {
+        if (!text) return '';
+        try {
+          const doc = new DOMParser().parseFromString(text, 'text/html');
+          return doc.body.textContent || '';
+        } catch {
+          return '';
+        }
+      }
+
       const searchInput = document.getElementById('searchInput');
       const searchBtn = document.getElementById('searchBtn');
       const searchResults = document.getElementById('searchResults');
@@ -605,7 +622,7 @@
           const data = await response.json();
           displaySearchResults(data);
         } catch (error) {
-          searchResults.innerHTML = `<div class="error">エラーが発生しました: ${error.message}</div>`;
+          searchResults.innerHTML = `<div class="error">エラーが発生しました: ${escapeHtml(error.message)}</div>`;
         } finally {
           searchBtn.disabled = false;
         }
@@ -622,19 +639,15 @@
         const resultsHtml = users
           .map(
             user => `
-                <div class="user-info" onclick="showUserDetail('${
-                  user.id
-                }')" style="cursor: pointer;">
+                <div class="user-info" onclick="showUserDetail(decodeURIComponent('${encodeURIComponent(user.id)}'))" style="cursor: pointer;">
                     <div class="user-header">
-                        <img class="user-avatar" src="${convertIconUrl(
-                          user.profile?.iconUrl
-                        )}" alt="Avatar" onerror="this.src='https://assets.resonite.com/9adc7bf85f005413174dbb26c1ef3f62b6ce9e1abbbaf5b504d490b872107373'">
+                        <img class="user-avatar" src="${escapeHtml(convertIconUrl(user.profile?.iconUrl))}" alt="Avatar" onerror="this.src='https://assets.resonite.com/9adc7bf85f005413174dbb26c1ef3f62b6ce9e1abbbaf5b504d490b872107373'">
                         <div class="user-basic">
                             <div class="username">
-                                ${user.username}
+                                ${escapeHtml(user.username)}
                             </div>
                             <div class="user-id">
-                                ${user.id}
+                                ${escapeHtml(user.id)}
                             </div>
                             ${
                               user.tags && user.tags.length > 0
@@ -649,7 +662,7 @@
                                           ? 'custom badge'
                                           : tag;
                                         return iconUrl
-                                          ? `<img class="tag-icon" src="${iconUrl}" alt="${displayName}" title="${displayName}" onerror="this.style.display='none'">`
+                                          ? `<img class="tag-icon" src="${escapeHtml(iconUrl)}" alt="${escapeHtml(displayName)}" title="${escapeHtml(displayName)}" onerror="this.style.display='none'">`
                                           : '';
                                       })
                                       .filter(Boolean)
@@ -718,7 +731,7 @@
           currentView = 'detail';
           displayUserDetail(user, currentSession);
         } catch (error) {
-          searchResults.innerHTML = `<div class="error">エラーが発生しました: ${error.message}</div>`;
+          searchResults.innerHTML = `<div class="error">エラーが発生しました: ${escapeHtml(error.message)}</div>`;
         }
       }
 
@@ -790,31 +803,25 @@
                     </div>
                     <div class="user-header" style="display: flex; gap: 20px; align-items: flex-start;">
                         <div style="display: flex; gap: 15px; align-items: flex-start; flex: 1;">
-                            <img class="user-avatar" src="${convertIconUrl(
-                              user.profile?.iconUrl
-                            )}" alt="Avatar" onerror="this.src='https://assets.resonite.com/9adc7bf85f005413174dbb26c1ef3f62b6ce9e1abbbaf5b504d490b872107373'">
+                            <img class="user-avatar" src="${escapeHtml(convertIconUrl(user.profile?.iconUrl))}" alt="Avatar" onerror="this.src='https://assets.resonite.com/9adc7bf85f005413174dbb26c1ef3f62b6ce9e1abbbaf5b504d490b872107373'">
                             <div class="user-basic">
-                                <div class="username copyable" onclick="copyToClipboard('${
-                                  user.username
-                                }', this)">
-                                    ${user.username}
+                                <div class="username copyable" onclick="copyToClipboard(decodeURIComponent('${encodeURIComponent(user.username)}'), this)">
+                                    ${escapeHtml(user.username)}
                                     <svg class="copy-icon" viewBox="0 0 24 24" fill="currentColor">
                                         <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
                                     </svg>
                                     <div class="copy-feedback">コピーしました!</div>
                                 </div>
-                                <div class="user-id copyable" onclick="copyToClipboard('${
-                                  user.id
-                                }', this)">
-                                    ${user.id}
+                                <div class="user-id copyable" onclick="copyToClipboard(decodeURIComponent('${encodeURIComponent(user.id)}'), this)">
+                                    ${escapeHtml(user.id)}
                                     <svg class="copy-icon" viewBox="0 0 24 24" fill="currentColor">
                                         <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
                                     </svg>
                                     <div class="copy-feedback">コピーしました!</div>
                                 </div>
                                 <div class="user-dates" style="font-size: 0.9em; color: #666; margin-top: 8px;">
-                                    <div>登録日: ${registrationDate}</div>
-                                    ${migratedDate ? `<div>移行前登録日: ${migratedDate}</div>` : ''}
+                                    <div>登録日: ${escapeHtml(registrationDate)}</div>
+                                    ${migratedDate ? `<div>移行前登録日: ${escapeHtml(migratedDate)}</div>` : ''}
                                 </div>
                             </div>
                         </div>
@@ -823,18 +830,13 @@
                             ? `
                             <div class="current-session-header" style="flex: 0 0 auto; max-width: 300px;">
                                 <h4 style="margin: 0 0 8px 0; font-size: 1em; color: #333;">現在のセッション</h4>
-                                <a href="https://go.resonite.com/session/${
-                                  currentSession.sessionId
-                                }" target="_blank" style="text-decoration: none; color: inherit;">
+                                <a href="https://go.resonite.com/session/${encodeURIComponent(currentSession.sessionId)}" target="_blank" style="text-decoration: none; color: inherit;">
                                     <div style="padding: 10px; border: 1px solid #e9ecef; border-radius: 8px; cursor: pointer; transition: background-color 0.2s ease; background: #f8f9fa;">
-                                        <div style="font-weight: 500; margin-bottom: 8px; color: #333; font-size: 0.9em; word-break: break-word;">${currentSession.name.replace(
-                                          /<[^>]*>/g,
-                                          ''
-                                        )}</div>
+                                        <div style="font-weight: 500; margin-bottom: 8px; color: #333; font-size: 0.9em; word-break: break-word;">${escapeHtml(safeStripHtmlTags(currentSession.name))}</div>
                                         ${
                                           currentSession.thumbnailUrl
                                             ? `
-                                            <img src="${currentSession.thumbnailUrl}" alt="セッションサムネイル" style="width: 100%; max-width: 200px; border-radius: 5px;">
+                                            <img src="${escapeHtml(currentSession.thumbnailUrl)}" alt="セッションサムネイル" style="width: 100%; max-width: 200px; border-radius: 5px;">
                                         `
                                             : ''
                                         }
@@ -864,10 +866,10 @@
                                         return `<span class="tag">
                                             ${
                                               iconUrl
-                                                ? `<img class="tag-icon" src="${iconUrl}" alt="${tag}" onerror="this.style.display='none'">`
+                                                ? `<img class="tag-icon" src="${escapeHtml(iconUrl)}" alt="${escapeHtml(tag)}" onerror="this.style.display='none'">`
                                                 : ''
                                             }
-                                            ${displayName}
+                                            ${escapeHtml(displayName)}
                                         </span>`;
                                       })
                                       .join('')}
@@ -876,11 +878,11 @@
                         `
                             : ''
                         }
-                        
+
                         <div class="detail-section">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                                 <h3 style="margin: 0;">作成したワールド</h3>
-                                <button onclick="openAllWorlds('${user.id}')" style="background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9em; transition: background 0.2s ease;" onmouseover="this.style.background='#5a67d8'" onmouseout="this.style.background='#667eea'">
+                                <button onclick="openAllWorlds(decodeURIComponent('${encodeURIComponent(user.id)}'))" style="background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9em; transition: background 0.2s ease;" onmouseover="this.style.background='#5a67d8'" onmouseout="this.style.background='#667eea'">
                                     すべて表示
                                 </button>
                             </div>
@@ -912,19 +914,6 @@
         if (!text) return '';
         if (text.length <= maxLength) return text;
         return text.substring(0, maxLength) + '...';
-      }
-
-      // すべてのHTMLタグを除去してプレーンテキストにする
-      function stripAllTags(text) {
-        if (!text) return '';
-        return text
-          .replace(/<[^>]*>/g, '') // すべてのHTMLタグを除去
-          .replace(/&lt;/g, '<') // HTMLエンティティをデコード
-          .replace(/&gt;/g, '>')
-          .replace(/&amp;/g, '&')
-          .replace(/&quot;/g, '"')
-          .replace(/&#39;/g, "'")
-          .trim();
       }
 
       // ユーザーのワールドを読み込み
@@ -980,19 +969,21 @@
                 const publishDate = new Date(
                   world.firstPublishTime
                 ).toLocaleDateString('ja-JP');
-                const worldName = stripAllTags(world.name);
+                const worldName = escapeHtml(safeStripHtmlTags(world.name));
                 const worldDescription = world.description
-                  ? truncateText(stripAllTags(world.description), 120)
+                  ? escapeHtml(
+                      truncateText(safeStripHtmlTags(world.description), 120)
+                    )
                   : '';
-                const worldUrl = `https://go.resonite.com/world/${world.ownerId}/${world.id}`;
+                const worldUrl = `https://go.resonite.com/world/${encodeURIComponent(world.ownerId)}/${encodeURIComponent(world.id)}`;
 
                 return `
                 <a href="${worldUrl}" target="_blank" style="text-decoration: none; color: inherit;">
                   <div class="world-card world-item">
-                    <img src="${thumbnailUrl}" alt="${world.name}" class="world-thumbnail" onerror="this.src='https://assets.resonite.com/9adc7bf85f005413174dbb26c1ef3f62b6ce9e1abbbaf5b504d490b872107373'">
+                    <img src="${escapeHtml(thumbnailUrl)}" alt="${worldName}" class="world-thumbnail" onerror="this.src='https://assets.resonite.com/9adc7bf85f005413174dbb26c1ef3f62b6ce9e1abbbaf5b504d490b872107373'">
                     <div class="world-content">
                       <div class="world-title">${worldName}</div>
-                      <div class="world-date">公開日: ${publishDate}</div>
+                      <div class="world-date">公開日: ${escapeHtml(publishDate)}</div>
                       ${worldDescription ? `<div class="world-description">${worldDescription}</div>` : ''}
                     </div>
                   </div>
