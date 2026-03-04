@@ -91,3 +91,4 @@ for (const slot of rootSlot.isReferenceOnly ? [] : rootSlot.children) {
 }
 
 console.log('Done!');
+link.socket.close();
