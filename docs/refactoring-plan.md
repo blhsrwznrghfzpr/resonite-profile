@@ -8,7 +8,19 @@
 
 ---
 
-## 現状の課題
+## 実施状況
+
+| フェーズ | 内容                                       | 状態    | コミット  |
+| -------- | ------------------------------------------ | ------- | --------- |
+| Phase 0  | デッドコード削除・依存整理                 | ✅ 完了 | `d32a3d0` |
+| Phase 1  | フロントエンド XSS 修正                    | ✅ 完了 | `b94825b` |
+| Phase 2  | Worker の TypeScript 化・モジュール分割    | ✅ 完了 | `91d35ed` |
+| Phase 3  | Hono 導入                                  | ✅ 完了 | `b363a98` |
+| Phase 4  | Vite + Preact 導入（フロントエンド再構築） | ✅ 完了 | `fcd5e27` |
+
+---
+
+## 現状の課題（リファクタリング前の状態）
 
 ### セキュリティ
 
@@ -114,14 +126,13 @@ Phase 4  Vite + Preact 導入（フロントエンド再構築）
 
 2. **検索結果表示 (`displaySearchResults`) の修正**
    - `innerHTML` に埋め込む前に `user.username`, `user.id` 等を `escapeHtml()` で処理
-   - または DOM API（`createElement` / `textContent`）に置き換え
 
 3. **詳細表示 (`displayUserDetail`) の修正**
    - 同様に全ユーザー由来データをエスケープ
-   - `currentSession.name` のサニタイズを `stripAllTags()` → `escapeHtml()` に変更
+   - `currentSession.name` のサニタイズを `DOMParser` ベースの `safeStripHtmlTags()` に変更
 
 4. **`stripAllTags()` の廃止**
-   - 正規表現ベースの HTML 除去は不完全なため、DOMParser か `escapeHtml()` に置き換え
+   - 正規表現ベースの HTML 除去は不完全なため、`DOMParser` ベースの `safeStripHtmlTags()` に置き換え
 
 ### 変更対象ファイル
 
@@ -141,7 +152,7 @@ Phase 4  Vite + Preact 導入（フロントエンド再構築）
 
 **目的**: 795 行の `worker.js` を責務ごとに分割し、TypeScript で型安全にする。
 
-### 最終ディレクトリ構成
+### 最終ディレクトリ構成（実装後）
 
 ```
 worker/
@@ -150,8 +161,7 @@ worker/
 ├── constants.ts             # 定数（API URL, デフォルト値, Cache-Control 文字列）
 ├── middleware/
 │   ├── cors.ts              # parseAllowedOrigins, isOriginAllowed, withCors, optionsResponse
-│   ├── rateLimit.ts         # checkRateLimit, attachRateLimitHeaders, pruneRateLimitStore
-│   └── security.ts          # withRequestId, methodNotAllowed
+│   └── rateLimit.ts         # checkRateLimit, attachRateLimitHeaders, pruneRateLimitStore
 ├── routes/
 │   ├── health.ts            # GET /api/health
 │   ├── users.ts             # GET /api/users, GET /api/users/:id
@@ -160,34 +170,35 @@ worker/
 │   └── ogp.ts               # GET /user/:id（OGP HTML 生成）
 ├── lib/
 │   ├── cache.ts             # Edge Cache + KV の読み書き
+│   ├── config.ts            # getRuntimeConfig（環境変数のパースとデフォルト値）
 │   ├── proxy.ts             # proxyGet, proxyWorlds, fetchWithTimeout, fetchWithRetry
-│   ├── response.ts          # jsonResponse, errorResponse, asHeadResponse, withCacheHeaders, withServerTiming
-│   └── url.ts               # convertIconUrl（フロントエンドとの共有候補）
+│   ├── response.ts          # jsonResponse, errorResponse, asHeadResponse, withCacheHeaders,
+│   │                        # withServerTiming, withRequestId, methodNotAllowed 等
+│   └── url.ts               # convertIconUrl
 ```
+
+> **計画との差分**: 当初 `middleware/security.ts`（withRequestId, methodNotAllowed）を分離する予定だったが、
+> これらはレスポンス構築に関連するため `lib/response.ts` に統合した。
+> また `lib/config.ts` は計画に含まれていなかったが、環境変数パースの責務を分離するために追加した。
 
 ### 作業内容
 
 1. **TypeScript の設定**
-   - `tsconfig.json` を追加（`target: "esnext"`, `module: "esnext"`, `types: ["@cloudflare/workers-types"]`）
-   - `@cloudflare/workers-types` を devDependencies に追加
-   - `wrangler.toml` の `main` を `worker/index.ts` に変更（Wrangler が自動的に TypeScript をビルド）
+   - `tsconfig.json` を追加（`target: "esnext"`, `module: "esnext"`, `lib: ["esnext"]`, `types: ["@cloudflare/workers-types"]`）
+   - `lib: ["esnext"]` により DOM の `CacheStorage` 型定義との競合を回避（Workers-types が正しい型を提供）
+   - `@cloudflare/workers-types`, `typescript` を devDependencies に追加
+   - `wrangler.toml` の `main` を `worker/index.ts` に変更
 
 2. **段階的な分割**（各ステップで全テストをパスさせる）
-   - Step 1: `worker.js` → `worker/index.ts` にリネーム・移動（内容そのまま + 型アノテーション追加）
-   - Step 2: `constants.ts`, `types.ts` を抽出
-   - Step 3: `lib/response.ts`, `lib/url.ts` を抽出
-   - Step 4: `lib/cache.ts`, `lib/proxy.ts` を抽出
-   - Step 5: `middleware/cors.ts`, `middleware/rateLimit.ts`, `middleware/security.ts` を抽出
-   - Step 6: `routes/` を抽出
 
 3. **テストの適応**
-   - テストは Worker の `fetch` ハンドラの export を直接呼び出しているため、エントリポイントの export 形式を維持すれば既存テストはそのまま動作する
-   - Wrangler がビルドした `worker.js` 出力をテストが import できるように `wrangler.toml` または test script を調整
-   - あるいは: テストファイルも `.mts` にしてTypeScriptのソースを直接import
+   - テストランナーを `tsx/esm` から `node --experimental-strip-types --experimental-default-type=module` に変更
+     - Node.js 22 では `tsx/esm` の `resolveSync()` が未実装のため互換性エラーが発生
+   - `tests/worker.test.mjs` の import パスを `../worker/index.ts` に変更
 
-4. **ESLint 設定の更新**
-   - TypeScript ファイルのリント対応（`@typescript-eslint/parser`, `@typescript-eslint/eslint-plugin`）
-   - `lint-staged` に `*.ts` を追加
+4. **ESLint 設定**
+   - TypeScript 用の `@typescript-eslint` プラグインは未導入（TypeScript の型チェックは `npx tsc --noEmit` で代替）
+   - `lint-staged` の対象を `*.{js,mjs}` のまま維持（Worker の `.ts` ファイルへの ESLint は Phase 4 で `*.{ts,tsx}` の prettier 対象追加時に拡張）
 
 ### 変更対象ファイル
 
@@ -195,13 +206,12 @@ worker/
 | ---- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | 削除 | `worker.js`                                                                                                                         |
 | 新規 | `worker/index.ts`, `worker/types.ts`, `worker/constants.ts`                                                                         |
-| 新規 | `worker/middleware/cors.ts`, `worker/middleware/rateLimit.ts`, `worker/middleware/security.ts`                                      |
+| 新規 | `worker/middleware/cors.ts`, `worker/middleware/rateLimit.ts`                                                                       |
 | 新規 | `worker/routes/health.ts`, `worker/routes/users.ts`, `worker/routes/sessions.ts`, `worker/routes/worlds.ts`, `worker/routes/ogp.ts` |
-| 新規 | `worker/lib/cache.ts`, `worker/lib/proxy.ts`, `worker/lib/response.ts`, `worker/lib/url.ts`                                         |
+| 新規 | `worker/lib/cache.ts`, `worker/lib/config.ts`, `worker/lib/proxy.ts`, `worker/lib/response.ts`, `worker/lib/url.ts`                 |
 | 新規 | `tsconfig.json`                                                                                                                     |
 | 編集 | `wrangler.toml` (`main` パス変更)                                                                                                   |
-| 編集 | `package.json` (devDependencies, scripts, lint-staged)                                                                              |
-| 編集 | `eslint.config.mjs` (TypeScript 対応)                                                                                               |
+| 編集 | `package.json` (devDependencies: tsx, typescript, @cloudflare/workers-types 追加、test:worker スクリプト変更)                       |
 | 編集 | `tests/worker.test.mjs` (import パス調整)                                                                                           |
 
 ### 完了条件
@@ -222,7 +232,6 @@ worker/
 - Cloudflare Workers ネイティブ対応（バンドルサイズ ~14KB）
 - ミドルウェアパターンが宣言的
 - TypeScript ファーストで型推論が強力
-- `app.fire()` でユニットテストが書きやすい
 
 ### 作業内容
 
@@ -234,40 +243,54 @@ worker/
 
 2. **エントリポイントの書き換え** (`worker/index.ts`)
 
+   `HonoEnv` 型で `Bindings`（環境変数）と `Variables`（リクエストスコープ変数）を定義し、
+   ミドルウェアを `app.use()` / `app.all()` / `app.options()` で登録する構成に移行。
+
    ```ts
-   import { Hono } from 'hono';
-   import { cors } from './middleware/cors';
-   import { rateLimit } from './middleware/rateLimit';
-   import { usersRoutes } from './routes/users';
-   // ...
+   type HonoEnv = {
+     Bindings: Env;
+     Variables: {
+       requestId: string;
+       rateState: RateLimitState;
+       rateLimitConfig: RateLimitConfig;
+       runtimeConfig: RuntimeConfig;
+     };
+   };
 
-   const app = new Hono<{ Bindings: Env }>();
+   const app = new Hono<HonoEnv>();
 
-   app.use('/api/*', cors());
-   app.use('/api/*', rateLimit());
-   app.route('/api', usersRoutes);
+   // ミドルウェア登録順（Hono の first-match セマンティクスを活用）
+   app.use('*' /* requestId 付与 */);
+   app.options('/api/*' /* CORS preflight */);
+   app.use('/api/*' /* CORS origin チェック */);
+   app.all('/api/health' /* ヘルスチェック：レートリミット前に終端 */);
+   app.use('/api/*' /* レートリミット */);
+   app.all('/api/users', handler);
+   app.all('/api/users/*', handler); // :id は空文字も含むため /* で受けて手動抽出
    // ...
+   app.all('*' /* ASSETS fallthrough */);
 
    export default app;
    ```
 
-3. **各ルートを Hono のルートハンドラに変換**
-   - `handleApi` 内の `if (pathname === ...)` チェーン → `app.get('/api/users', handler)` 等に分解
-   - レスポンスヘルパー（`withCors`, `attachRateLimitHeaders` 等）→ Hono ミドルウェアに変換
+   > **実装上の注意**: `/api/users/:id` に対して Hono の `:id` パラメータパターンを使うと
+   > `/api/users/`（空 ID）が 404 になるため、`/api/users/*` で受けて
+   > `c.req.path.slice('/api/users/'.length)` で userId を抽出する。
 
-4. **テストの書き換え**
-   - Hono の `app.request()` メソッドでテスト可能
-   - テストが `export default { fetch }` を直接呼び出している箇所を `app.request()` に移行
+3. **各ルートハンドラは `worker/routes/` のまま維持**
+   - `handleUsers()`, `handleUserDetail()` 等は Hono の `Context` ではなく `Request` + `Env` を受け取る形のまま
+   - `worker/index.ts` の Hono ハンドラ内で呼び出す
+
+4. **テストは既存のまま**
+   - Hono の `export default app` は `app.fetch(req, env)` を持つため、
+     テストが呼ぶ `worker.fetch(request, env)` がそのまま動作する
 
 ### 変更対象ファイル
 
-| 操作 | ファイル                                           |
-| ---- | -------------------------------------------------- |
-| 編集 | `worker/index.ts` (全面書き換え)                   |
-| 編集 | `worker/middleware/*.ts` (Hono ミドルウェア形式に) |
-| 編集 | `worker/routes/*.ts` (Hono ルートハンドラ形式に)   |
-| 編集 | `tests/worker.test.mjs` (テスト呼び出し方法の変更) |
-| 編集 | `package.json` (hono 追加)                         |
+| 操作 | ファイル                                      |
+| ---- | --------------------------------------------- |
+| 編集 | `worker/index.ts`（全面書き換え）             |
+| 編集 | `package.json`（hono を dependencies に追加） |
 
 ### 完了条件
 
@@ -283,98 +306,88 @@ worker/
 
 ### 技術選定の理由
 
-| 項目         | 選定                  | 理由                                           |
-| ------------ | --------------------- | ---------------------------------------------- |
-| UIライブラリ | Preact                | バンドルサイズ ~3KB、JSX による自動エスケープ  |
-| ビルドツール | Vite                  | Wrangler v4 が内蔵 Vite をサポート、HMR が高速 |
-| ルーティング | preact-iso または手動 | 2画面（検索/詳細）だけなので軽量で十分         |
-| 状態管理     | Preact Signals        | 軽量で Preact との相性が良い                   |
+| 項目         | 選定         | 理由                                           |
+| ------------ | ------------ | ---------------------------------------------- |
+| UIライブラリ | Preact       | バンドルサイズ ~3KB、JSX による自動エスケープ  |
+| ビルドツール | Vite         | Wrangler v4 が内蔵 Vite をサポート、HMR が高速 |
+| ルーティング | preact-iso   | 2画面（検索/詳細）に十分な軽量ルーター         |
+| 状態管理     | preact/hooks | `useState`/`useEffect` で十分な複雑度          |
 
-### 最終ディレクトリ構成
+### 最終ディレクトリ構成（実装後）
 
 ```
 src/
-├── index.html               # Vite エントリ HTML（最小限のシェル）
-├── main.tsx                  # アプリ初期化・ルーティング
-├── style.css                 # グローバルスタイル（現 index.html の <style> を抽出）
+├── index.html               # Vite エントリ HTML（<title> を OGP 注入のために保持）
+├── main.tsx                  # アプリ初期化（Preact の render）
+├── style.css                 # グローバルスタイル（旧 index.html の <style> を抽出）
+├── types.ts                  # 共通型定義（User, Session, World インターフェース）
 ├── components/
-│   ├── App.tsx               # ルートコンポーネント
+│   ├── App.tsx               # LocationProvider + Router
 │   ├── Header.tsx            # ヘッダー（タイトル + GitHub リンク）
-│   ├── SearchBar.tsx         # 検索フォーム
-│   ├── UserCard.tsx          # 検索結果カード（一覧用）
-│   ├── UserDetail.tsx        # ユーザー詳細ページ
+│   ├── SearchPage.tsx        # 検索フォーム + 検索結果一覧
+│   ├── UserDetailPage.tsx    # ユーザー詳細ページ（セッション・ワールド含む）
 │   ├── WorldGrid.tsx         # ワールドカード一覧
-│   ├── WorldCard.tsx         # 個別ワールドカード
 │   ├── TagBadge.tsx          # タグバッジ表示
-│   └── CopyableText.tsx     # コピー機能付きテキスト
-├── hooks/
-│   ├── useUser.ts            # ユーザー検索・詳細取得
-│   ├── useWorlds.ts          # ワールド一覧取得
-│   └── useSessions.ts       # セッション取得
+│   └── CopyableText.tsx      # コピー機能付きテキスト
 ├── lib/
-│   ├── api.ts                # fetch ラッパー（apiUrl 生成）
-│   └── url.ts                # convertIconUrl（worker/lib/url.ts と共有）
+│   ├── api.ts                # fetch ラッパー（searchUsers, fetchUser, fetchSessions, fetchUserWorlds）
+│   └── url.ts                # convertIconUrl, DEFAULT_AVATAR_URL
 └── data/
     └── tagImages.ts          # タグ画像マッピング（ES Module 化、型付き）
 ```
 
+> **計画との差分**:
+>
+> - `hooks/` ディレクトリ（useUser, useWorlds, useSessions）は作成せず、データ取得ロジックはコンポーネント内の `useEffect` にインラインで実装した（2画面のみで分離メリットが薄いため）
+> - `SearchBar`, `UserCard`, `WorldCard` は独立コンポーネントにせず、それぞれ `SearchPage`, `WorldGrid` にインラインで実装した
+> - `shared/url.ts` による Worker との `convertIconUrl` 共有は実施しなかった。`tsconfig.json`（Worker 用、`lib: ["esnext"]`）と `tsconfig.app.json`（フロントエンド用、`lib: ["dom", ...]`）が分離されており、ビルド環境の前提が異なるため、`src/lib/url.ts` と `worker/lib/url.ts` をそれぞれ独立して保持する
+
 ### 作業内容
 
 1. **Vite + Preact のセットアップ**
-   - `npm install preact` / `npm install -D @preact/preset-vite`
-   - `vite.config.ts` を作成
+   - `npm install preact preact-iso` / `npm install -D @preact/preset-vite vite`
+   - `vite.config.ts` を作成（`root: 'src'`, `outDir: '../dist'`, `/api` → `localhost:8787` のプロキシ設定）
+   - `tsconfig.app.json` を新規作成（`lib: ["esnext", "dom", "dom.iterable"]`, `jsx: "react-jsx"`, `jsxImportSource: "preact"`）
    - `wrangler.toml` の `[assets] directory` を `"./dist"` に変更
 
 2. **CSS の抽出**
    - `index.html` 内の `<style>` → `src/style.css` へ移動
-   - レスポンシブメディアクエリも含めてそのまま移行
 
 3. **コンポーネントへの分割**
-   - `displaySearchResults()` → `<UserCard>` コンポーネント
-   - `displayUserDetail()` → `<UserDetail>` コンポーネント
-   - `displayUserWorlds()` → `<WorldGrid>` + `<WorldCard>`
-   - `copyToClipboard()` → `<CopyableText>` コンポーネント（`useRef` でフィードバック管理）
-   - `handlePageLoad()` / `popstate` → `preact-iso` または `useEffect` + `history.pushState`
+   - `displaySearchResults()` → `SearchPage` コンポーネント内にインライン化
+   - `displayUserDetail()` → `UserDetailPage` コンポーネント
+   - `displayUserWorlds()` → `WorldGrid` コンポーネント
+   - `copyToClipboard()` → `CopyableText` コンポーネント（`useState` でフィードバック管理）
+   - `handlePageLoad()` / `popstate` → `preact-iso` の `LocationProvider` + `Router` に置き換え
 
 4. **tagImages の ES Module 化**
    - `public/js/tagImages.js` → `src/data/tagImages.ts`
    - `window.getTagIcon` グローバル → named export `getTagIcon()` に変更
-   - データのマッピング自体はそのまま移行（`getBadgeTexture.ts` で採取した値なので手を加えない）
-   - タグ名のリテラル型を追加
    - 新バッジを追加する際のワークフロー: `tools/getBadgeTexture.ts` を実行 → 出力された URL を `src/data/tagImages.ts` に追記
 
-5. **`convertIconUrl` の共有**
-   - `src/lib/url.ts` と `worker/lib/url.ts` を同一ソースにする
-   - 方法: シンボリックリンク、npm workspace、またはビルド時コピー
-   - 最もシンプルな方法: `shared/url.ts` を作成し、双方から import
-
-6. **OGP との整合性**
+5. **OGP との整合性**
    - Worker の `buildUserPage()` は `dist/index.html` を読み取って OGP タグを注入
-   - Vite ビルド後の `dist/index.html` に `<title>Resonite ユーザー検索</title>` が含まれていれば既存の置換ロジックがそのまま動作
+   - `src/index.html` に `<title>Resonite ユーザー検索</title>` を記述することで、Vite ビルド後の `dist/index.html` にも同文字列が保持され、既存の置換ロジックがそのまま動作する
 
 ### 変更対象ファイル
 
-| 操作 | ファイル                                                                   |
-| ---- | -------------------------------------------------------------------------- |
-| 削除 | `public/index.html`                                                        |
-| 削除 | `public/js/tagImages.js`                                                   |
-| 新規 | `src/` 以下すべて                                                          |
-| 新規 | `vite.config.ts`                                                           |
-| 新規 | `shared/url.ts`（共有ユーティリティ）                                      |
-| 編集 | `wrangler.toml` (`[assets] directory` → `"./dist"`)                        |
-| 編集 | `worker/lib/url.ts` (`shared/url.ts` を re-export)                         |
-| 編集 | `worker/routes/ogp.ts` (ビルド済み HTML のパスが変わる場合)                |
-| 編集 | `package.json` (preact, vite, @preact/preset-vite 追加、build script 追加) |
-| 編集 | `tsconfig.json` (JSX 設定追加)                                             |
+| 操作 | ファイル                                                                                                                                                   |
+| ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 削除 | `public/index.html`                                                                                                                                        |
+| 削除 | `public/js/tagImages.js`                                                                                                                                   |
+| 新規 | `src/` 以下すべて                                                                                                                                          |
+| 新規 | `vite.config.ts`                                                                                                                                           |
+| 新規 | `tsconfig.app.json`（フロントエンド用 TypeScript 設定）                                                                                                    |
+| 編集 | `wrangler.toml`（`[assets] directory` → `"./dist"`）                                                                                                       |
+| 編集 | `package.json`（preact, preact-iso, vite, @preact/preset-vite 追加、`build: "vite build"`、`dev:frontend: "vite"` 追加、lint-staged に `*.{ts,tsx}` 追加） |
 
 ### 完了条件
 
 - `npm run build` で `dist/` にフロントエンドがビルドされる
-- `npm run dev:worker` でローカルの HMR 開発ができる
+- `npm run dev:frontend` + `npm run dev:worker` でローカルの HMR 開発ができる
 - 全画面（検索一覧、ユーザー詳細、ワールド表示）が既存と同等に動作
 - `/user/:id` の OGP タグが正しく生成される
 - XSS ペイロードが構造的に実行不可能（JSX の自動エスケープ）
-- Lighthouse パフォーマンススコアが劣化しない
 
 ---
 
@@ -382,35 +395,40 @@ src/
 
 以下は検討した上で、現時点では **スコープ外** とします。
 
-| 項目                                           | 理由                                                             |
-| ---------------------------------------------- | ---------------------------------------------------------------- |
-| Durable Objects によるグローバルレートリミット | コストに見合わない。per-isolate で十分                           |
-| Cloudflare Pages への移行                      | Workers + Assets で静的配信は既に CDN エッジ。移行メリットが薄い |
-| React / Vue / Svelte                           | Preact の ~3KB で十分。フレームワークの重さが不要                |
-| GraphQL 化                                     | API エンドポイントが 5 つのみ。REST で十分                       |
-| モノレポ化（Turborepo 等）                     | Worker + フロントエンドの 2 パッケージ程度では過剰               |
-| E2E テスト（Playwright 等）の導入              | 有用だが本リファクタリングのスコープ外。別途検討                 |
+| 項目                                           | 理由                                                                                     |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Durable Objects によるグローバルレートリミット | コストに見合わない。per-isolate で十分                                                   |
+| Cloudflare Pages への移行                      | Workers + Assets で静的配信は既に CDN エッジ。移行メリットが薄い                         |
+| React / Vue / Svelte                           | Preact の ~3KB で十分。フレームワークの重さが不要                                        |
+| GraphQL 化                                     | API エンドポイントが 5 つのみ。REST で十分                                               |
+| モノレポ化（Turborepo 等）                     | Worker + フロントエンドの 2 パッケージ程度では過剰                                       |
+| E2E テスト（Playwright 等）の導入              | 有用だが本リファクタリングのスコープ外。別途検討                                         |
+| `convertIconUrl` の Worker / src 間共有        | tsconfig（workers-types vs DOM lib）が分離されており、単純な共有が困難。独立コピーで維持 |
+| ESLint の TypeScript 対応                      | `@typescript-eslint` プラグイン未導入。型チェックは `npx tsc --noEmit` で代替            |
 
 ---
 
 ## リスクと対策
 
-| リスク                                                      | 影響                             | 対策                                                                                        |
-| ----------------------------------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------- |
-| Phase 2 でテストが import パス変更により壊れる              | テスト不能期間が発生             | Wrangler ビルド出力を `dist/worker.js` に固定し、テストはそれを import。段階的に移行        |
-| Phase 3 の Hono 導入でレスポンスヘッダーが微妙に変わる      | ステージングスモークテストが失敗 | Hono 導入前後でレスポンスヘッダーの diff を取り、完全一致を確認                             |
-| Phase 4 の Preact 導入でバンドルサイズが増加                | 初回ロード性能が劣化             | Vite のバンドル分析（`rollup-plugin-visualizer`）で監視。目標: gzip 後 30KB 以下            |
-| OGP 生成の `<title>` 置換が Vite ビルド後の HTML で動かない | SNS シェア時にメタ情報が欠落     | Vite ビルド後の HTML に `<title>Resonite ユーザー検索</title>` が含まれることをテストで保証 |
+| リスク                                                      | 影響                             | 対策                                                                                                            |
+| ----------------------------------------------------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Phase 2 でテストが import パス変更により壊れる              | テスト不能期間が発生             | `node --experimental-strip-types` で TypeScript ソースを直接 import。tsx/esm は Node.js 22 と非互換のため不採用 |
+| Phase 3 の Hono 導入でレスポンスヘッダーが微妙に変わる      | ステージングスモークテストが失敗 | Hono 導入前後でレスポンスヘッダーの diff を取り、完全一致を確認                                                 |
+| Phase 4 の Preact 導入でバンドルサイズが増加                | 初回ロード性能が劣化             | Vite ビルド結果: JS 38.7KB (gzip: 15.3KB)、CSS 5.9KB (gzip: 1.8KB)                                              |
+| OGP 生成の `<title>` 置換が Vite ビルド後の HTML で動かない | SNS シェア時にメタ情報が欠落     | `src/index.html` に文字列を保持し、Vite が変更しないことを確認済み                                              |
 
 ---
 
-## 参考: 現在のファイルサイズ
+## 参考: ファイル変遷
 
-| ファイル                 | 行数  | リファクタ後                                      |
-| ------------------------ | ----- | ------------------------------------------------- |
-| `worker.js`              | 795   | → `worker/` 以下に 12 ファイルへ分割              |
-| `public/index.html`      | 1,106 | → `src/` 以下に ~15 ファイルへ分割                |
-| `public/js/tagImages.js` | 234   | → `src/data/tagImages.ts` に移動                  |
-| `server.js`              | 181   | → 削除                                            |
-| `getBadgeTexture.ts`     | -     | → `tools/getBadgeTexture.ts` へ移動（削除しない） |
-| `tests/worker.test.mjs`  | 1,424 | → import パス調整 + Hono 対応                     |
+| ファイル（リファクタリング前） | 行数  | リファクタリング後                                                |
+| ------------------------------ | ----- | ----------------------------------------------------------------- |
+| `worker.js`                    | 795   | 削除 → `worker/` 以下 11 ファイルに分割（合計約 900 行）          |
+| `public/index.html`            | 1,106 | 削除 → `src/` 以下 15 ファイルに分割（合計約 800 行 + style.css） |
+| `public/js/tagImages.js`       | 234   | 削除 → `src/data/tagImages.ts` に移動（名前付きエクスポート化）   |
+| `server.js`                    | 181   | 削除                                                              |
+| `getBadgeTexture.ts`           | -     | `tools/getBadgeTexture.ts` へ移動（削除しない）                   |
+| `tests/worker.test.mjs`        | 1,424 | import パス調整のみ（テストロジック変更なし、46件全件パス維持）   |
+| -                              | -     | 新規: `tsconfig.json`（Worker 用）                                |
+| -                              | -     | 新規: `tsconfig.app.json`（フロントエンド用）                     |
+| -                              | -     | 新規: `vite.config.ts`                                            |
