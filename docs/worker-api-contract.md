@@ -120,5 +120,5 @@ Cloudflare Worker経由でフロントエンドが依存するAPI契約を明文
 ### Response
 
 - `200 OK` HTML
-- `public/index.html` をベースに、可能な場合はユーザー情報を取得して OGP / Twitter メタタグを注入
+- `dist/index.html` をベースに、可能な場合はユーザー情報を取得して OGP / Twitter メタタグを注入
 - `Cache-Control: no-store`

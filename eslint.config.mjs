@@ -44,18 +44,4 @@ export default [
       'no-var': 'error',
     },
   },
-  {
-    files: ['server.js'],
-    languageOptions: {
-      globals: {
-        process: 'readonly',
-        __dirname: 'readonly',
-        require: 'readonly',
-        module: 'readonly',
-        exports: 'readonly',
-        Buffer: 'readonly',
-        global: 'readonly',
-      },
-    },
-  },
 ];
