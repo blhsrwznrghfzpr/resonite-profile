@@ -5,7 +5,8 @@
   "scripts": {
     "dev:worker": "wrangler dev",
     "deploy:worker": "wrangler deploy",
-    "build": "echo 'do nothing'",
+    "build": "vite build",
+    "dev:frontend": "vite",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
@@ -24,6 +25,7 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260305.0",
+    "@preact/preset-vite": "^2.10.3",
     "eslint": "^9.29.0",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-prettier": "^5.5.0",
@@ -33,6 +35,7 @@
     "resonitelink.js": "file:./ResoniteLink.js",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
+    "vite": "^7.3.1",
     "wrangler": "^4.33.0"
   },
   "lint-staged": {
@@ -40,11 +43,16 @@
       "eslint --fix",
       "prettier --write"
     ],
+    "*.{ts,tsx}": [
+      "prettier --write"
+    ],
     "*.{json,md}": [
       "prettier --write"
     ]
   },
   "dependencies": {
-    "hono": "^4.12.4"
+    "hono": "^4.12.4",
+    "preact": "^10.28.4",
+    "preact-iso": "^2.11.1"
   }
 }

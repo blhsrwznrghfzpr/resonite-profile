@@ -1,5 +1,5 @@
 // タグ画像マッピング設定
-const tagImages = {
+const tagImages: Record<string, string> = {
   // 一般的なタグ
   mentor: 'b765be132f8ddce120665b531ce8874fd2034529103ca72b0de9dfa896dfc9fc',
   moderator: '43b2368b3779c9413d24ba77ec9a9e00fce4d16e021e386941cde3247bdd1aa5',
@@ -142,14 +142,12 @@ const tagImages = {
   // Pride Flag
   'pride aegosexual':
     'https://github.com/Yellow-Dog-Man/PrideFlags/raw/main/PNGs/Color_128/Color_128_PrideFlag_Aegosexual.png',
-
   'pride agender':
     'https://github.com/Yellow-Dog-Man/PrideFlags/raw/main/PNGs/Color_128/Color_128_PrideFlag_Agender.png',
   'pride aroace':
     'https://github.com/Yellow-Dog-Man/PrideFlags/raw/main/PNGs/Color_128/Color_128_PrideFlag_Aroace.png',
   'pride aromantic':
     'https://github.com/Yellow-Dog-Man/PrideFlags/raw/main/PNGs/Color_128/Color_128_PrideFlag_Aromantic.png',
-
   'pride asexual':
     'https://github.com/Yellow-Dog-Man/PrideFlags/raw/main/PNGs/Color_128/Color_128_PrideFlag_Asexual.png',
   'pride bigender':
@@ -168,7 +166,6 @@ const tagImages = {
     'https://github.com/Yellow-Dog-Man/PrideFlags/raw/main/PNGs/Color_128/Color_128_PrideFlag_GilbertBaker.png',
   'pride graysexual':
     'https://github.com/Yellow-Dog-Man/PrideFlags/raw/main/PNGs/Color_128/Color_128_PrideFlag_Graysexual.png',
-
   'pride intersexprogress':
     'https://github.com/Yellow-Dog-Man/PrideFlags/raw/main/PNGs/Color_128/Color_128_PrideFlag_Intersex-InclusiveProgress.png',
   'pride intersex':
@@ -193,25 +190,22 @@ const tagImages = {
     'https://github.com/Yellow-Dog-Man/PrideFlags/raw/main/PNGs/Color_128/Color_128_PrideFlag_QueerPeopleOfColor.png',
   'pride straightally':
     'https://github.com/Yellow-Dog-Man/PrideFlags/raw/main/PNGs/Color_128/Color_128_PrideFlag_StraightAlly.png',
-
   'pride traditional':
     'https://github.com/Yellow-Dog-Man/PrideFlags/raw/main/PNGs/Color_128/Color_128_PrideFlag_Traditional.png',
   'pride transinclusivegaymen':
     'https://github.com/Yellow-Dog-Man/PrideFlags/raw/main/PNGs/Color_128/Color_128_PrideFlag_TransInclusiveGayMens.png',
   'pride transfeminine':
     'https://github.com/Yellow-Dog-Man/PrideFlags/raw/main/PNGs/Color_128/Color_128_PrideFlag_Transfeminine.png',
-
   'pride transgender':
     'https://github.com/Yellow-Dog-Man/PrideFlags/raw/main/PNGs/Color_128/Color_128_PrideFlag_Transgender.png',
   'pride transmasculine':
     'https://github.com/Yellow-Dog-Man/PrideFlags/raw/main/PNGs/Color_128/Color_128_PrideFlag_Transmasculine.png',
-
   'pride twospirit':
     'https://github.com/Yellow-Dog-Man/PrideFlags/raw/main/PNGs/Color_128/Color_128_PrideFlag_TwoSpirit.png',
 };
 
 // タグアイコンを取得する関数
-function getTagIcon(tagName) {
+export function getTagIcon(tagName: string): string | null {
   // custom badge:xxxの特殊処理
   if (tagName.startsWith('custom badge:')) {
     const customBadgeId = tagName.replace('custom badge:', '');
@@ -230,5 +224,3 @@ function getTagIcon(tagName) {
   // そうでなければassets.resonite.comのハッシュとして扱う
   return `https://assets.resonite.com/${imageValue}`;
 }
-
-window.getTagIcon = getTagIcon;
