@@ -14,6 +14,11 @@ const DEFAULT_RATE_LIMIT_WINDOW_MS = 60_000;
 const DEFAULT_RATE_LIMIT_MAX_REQUESTS = 120;
 const RATE_LIMIT_PRUNE_INTERVAL_MS = 5 * 60_000;
 const DEFAULT_RATE_LIMIT_MAX_TRACKED_IPS = 5000;
+// NOTE: This rate limiter uses in-memory state (per-isolate).
+// Cloudflare Workers may run across multiple isolates, so limits are not
+// shared globally. This provides best-effort abuse prevention, not a strict
+// global rate limit. For strict global rate limiting, use Durable Objects
+// or Cloudflare's Rate Limiting API.
 const rateLimitStore = new Map();
 let lastRateLimitPruneAt = 0;
 
@@ -614,33 +619,30 @@ async function handleApi(request, pathname, searchParams, env, requestId) {
   }
 
   if (!isOriginAllowed(request, env)) {
-    const forbiddenResponse = withCors(
-      errorResponse(403, 'Origin not allowed'),
-      request,
-      env,
-      requestId
+    return asHeadResponse(
+      withCors(errorResponse(403, 'Origin not allowed'), request, env, requestId),
+      request.method
     );
-    return asHeadResponse(forbiddenResponse, request.method);
   }
 
-  if (isGetLikeMethod(request.method) && pathname === '/api/health') {
-    const response = withCors(
-      jsonResponse(
-        {
-          status: 'ok',
-          service: 'resonite-profile-worker',
-          now: new Date().toISOString(),
-        },
-        200,
-        {
-          'Cache-Control': 'no-store',
-        }
+  // /api/health is exempt from rate limiting
+  if (pathname === '/api/health') {
+    if (!isGetLikeMethod(request.method)) {
+      return withCors(methodNotAllowed(['GET', 'HEAD']), request, env, requestId);
+    }
+    return asHeadResponse(
+      withCors(
+        jsonResponse(
+          { status: 'ok', service: 'resonite-profile-worker', now: new Date().toISOString() },
+          200,
+          { 'Cache-Control': 'no-store' }
+        ),
+        request,
+        env,
+        requestId
       ),
-      request,
-      env,
-      requestId
+      request.method
     );
-    return asHeadResponse(response, request.method);
   }
 
   const runtimeConfig = getRuntimeConfig(env);
@@ -651,31 +653,36 @@ async function handleApi(request, pathname, searchParams, env, requestId) {
       1,
       Math.ceil((rateState.resetAt - Date.now()) / 1000)
     );
-    const rateLimitedResponse = withCors(
-      jsonResponse({ error: 'Too many requests' }, 429, {
-        'Retry-After': String(retryAfterSeconds),
-        'X-RateLimit-Limit': String(rateLimitConfig.maxRequests),
-        'X-RateLimit-Remaining': '0',
-        'X-RateLimit-Reset': String(Math.floor(rateState.resetAt / 1000)),
-      }),
-      request,
-      env,
-      requestId
-    );
-    return asHeadResponse(rateLimitedResponse, request.method);
-  }
-  if (isGetLikeMethod(request.method) && pathname === '/api/users') {
-    const name = searchParams.get('name');
-    if (!name) {
-      const badRequestResponse = withCors(
-        errorResponse(400, 'Name parameter is required'),
+    return asHeadResponse(
+      withCors(
+        jsonResponse({ error: 'Too many requests' }, 429, {
+          'Retry-After': String(retryAfterSeconds),
+          'X-RateLimit-Limit': String(rateLimitConfig.maxRequests),
+          'X-RateLimit-Remaining': '0',
+          'X-RateLimit-Reset': String(Math.floor(rateState.resetAt / 1000)),
+        }),
         request,
         env,
         requestId
-      );
-      return asHeadResponse(badRequestResponse, request.method);
-    }
+      ),
+      request.method
+    );
+  }
 
+  if (pathname === '/api/users') {
+    if (!isGetLikeMethod(request.method)) {
+      return asHeadResponse(
+        withCors(methodNotAllowed(['GET', 'HEAD']), request, env, requestId),
+        request.method
+      );
+    }
+    const name = searchParams.get('name');
+    if (!name) {
+      return asHeadResponse(
+        withCors(errorResponse(400, 'Name parameter is required'), request, env, requestId),
+        request.method
+      );
+    }
     const response = await proxyGet(
       request,
       `${RESONITE_API_BASE}/users/?name=${encodeURIComponent(name)}`,
@@ -683,27 +690,26 @@ async function handleApi(request, pathname, searchParams, env, requestId) {
       runtimeConfig,
       { kvNamespace: env.SEARCH_CACHE, requestId }
     );
-    const apiResponse = withCors(
-      attachRateLimitHeaders(response, rateState, rateLimitConfig),
-      request,
-      env,
-      requestId
+    return asHeadResponse(
+      withCors(attachRateLimitHeaders(response, rateState, rateLimitConfig), request, env, requestId),
+      request.method
     );
-    return asHeadResponse(apiResponse, request.method);
   }
 
-  if (isGetLikeMethod(request.method) && pathname.startsWith('/api/users/')) {
+  if (pathname.startsWith('/api/users/')) {
+    if (!isGetLikeMethod(request.method)) {
+      return asHeadResponse(
+        withCors(methodNotAllowed(['GET', 'HEAD']), request, env, requestId),
+        request.method
+      );
+    }
     const userId = pathname.replace('/api/users/', '');
     if (!userId) {
-      const badRequestResponse = withCors(
-        errorResponse(400, 'User ID is required'),
-        request,
-        env,
-        requestId
+      return asHeadResponse(
+        withCors(errorResponse(400, 'User ID is required'), request, env, requestId),
+        request.method
       );
-      return asHeadResponse(badRequestResponse, request.method);
     }
-
     const response = await proxyGet(
       request,
       `${RESONITE_API_BASE}/users/${encodeURIComponent(userId)}`,
@@ -711,16 +717,19 @@ async function handleApi(request, pathname, searchParams, env, requestId) {
       runtimeConfig,
       { requestId }
     );
-    const apiResponse = withCors(
-      attachRateLimitHeaders(response, rateState, rateLimitConfig),
-      request,
-      env,
-      requestId
+    return asHeadResponse(
+      withCors(attachRateLimitHeaders(response, rateState, rateLimitConfig), request, env, requestId),
+      request.method
     );
-    return asHeadResponse(apiResponse, request.method);
   }
 
-  if (isGetLikeMethod(request.method) && pathname === '/api/sessions') {
+  if (pathname === '/api/sessions') {
+    if (!isGetLikeMethod(request.method)) {
+      return asHeadResponse(
+        withCors(methodNotAllowed(['GET', 'HEAD']), request, env, requestId),
+        request.method
+      );
+    }
     const response = await proxyGet(
       request,
       `${RESONITE_API_BASE}/sessions?minActiveUsers=1&includeEmptyHeadless=false`,
@@ -728,16 +737,19 @@ async function handleApi(request, pathname, searchParams, env, requestId) {
       runtimeConfig,
       { requestId }
     );
-    const apiResponse = withCors(
-      attachRateLimitHeaders(response, rateState, rateLimitConfig),
-      request,
-      env,
-      requestId
+    return asHeadResponse(
+      withCors(attachRateLimitHeaders(response, rateState, rateLimitConfig), request, env, requestId),
+      request.method
     );
-    return asHeadResponse(apiResponse, request.method);
   }
 
-  if (request.method === 'POST' && pathname === '/api/worlds') {
+  if (pathname === '/api/worlds') {
+    if (request.method !== 'POST') {
+      return asHeadResponse(
+        withCors(methodNotAllowed(['POST']), request, env, requestId),
+        request.method
+      );
+    }
     const response = await proxyWorlds(request, runtimeConfig, requestId);
     return withCors(
       attachRateLimitHeaders(response, rateState, rateLimitConfig),
@@ -747,67 +759,15 @@ async function handleApi(request, pathname, searchParams, env, requestId) {
     );
   }
 
-  if (pathname === '/api/users' && !isGetLikeMethod(request.method)) {
-    const notAllowedResponse = withCors(
-      methodNotAllowed(['GET', 'HEAD']),
+  return asHeadResponse(
+    withCors(
+      attachRateLimitHeaders(errorResponse(404, 'Not Found'), rateState, rateLimitConfig),
       request,
       env,
       requestId
-    );
-    return asHeadResponse(notAllowedResponse, request.method);
-  }
-
-  if (pathname.startsWith('/api/users/') && !isGetLikeMethod(request.method)) {
-    const notAllowedResponse = withCors(
-      methodNotAllowed(['GET', 'HEAD']),
-      request,
-      env,
-      requestId
-    );
-    return asHeadResponse(notAllowedResponse, request.method);
-  }
-
-  if (pathname === '/api/sessions' && !isGetLikeMethod(request.method)) {
-    const notAllowedResponse = withCors(
-      methodNotAllowed(['GET', 'HEAD']),
-      request,
-      env,
-      requestId
-    );
-    return asHeadResponse(notAllowedResponse, request.method);
-  }
-
-  if (pathname === '/api/worlds' && request.method !== 'POST') {
-    const notAllowedResponse = withCors(
-      methodNotAllowed(['POST']),
-      request,
-      env,
-      requestId
-    );
-    return asHeadResponse(notAllowedResponse, request.method);
-  }
-
-  if (pathname === '/api/health' && !isGetLikeMethod(request.method)) {
-    const notAllowedResponse = withCors(
-      methodNotAllowed(['GET', 'HEAD']),
-      request,
-      env,
-      requestId
-    );
-    return asHeadResponse(notAllowedResponse, request.method);
-  }
-
-  const notFoundResponse = withCors(
-    attachRateLimitHeaders(
-      errorResponse(404, 'Not Found'),
-      rateState,
-      rateLimitConfig
     ),
-    request,
-    env,
-    requestId
+    request.method
   );
-  return asHeadResponse(notFoundResponse, request.method);
 }
 
 export default {
