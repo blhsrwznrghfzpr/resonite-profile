@@ -33,8 +33,12 @@
 | ファイル | 状態 |
 |----------|------|
 | `server.js` | 旧 Express バックエンド。本番では未使用（Worker に移行済み） |
-| `getBadgeTexture.ts` | TypeScript ファイルだがビルドパイプラインに含まれていない |
 | `package.json` の `express`, `cors` | `server.js` 専用の依存。Worker では不要 |
+
+> **注**: `getBadgeTexture.ts` はビルドパイプライン外ですが、デッドコードではありません。
+> Resonite ゲームクライアントに ResoniteLink 経由で接続し、バッジの `StaticTexture2D` テクスチャ URL を採取する**開発者用の手動実行スクリプト**です。
+> `public/js/tagImages.js` のハッシュデータはこのスクリプトで収集したものです。
+> 新しいバッジが追加された際に手動で実行して `tagImages.js` を更新する用途で使い続けます。
 
 ---
 
@@ -66,8 +70,9 @@ Phase 4  Vite + Preact 導入（フロントエンド再構築）
    - Express ベースの旧バックエンド
    - `wrangler dev` でローカル開発が可能なため不要
 
-2. **`getBadgeTexture.ts` を削除**
-   - ビルドパイプラインに含まれていない孤立ファイル
+2. **`getBadgeTexture.ts` を移動**（任意）
+   - `tools/getBadgeTexture.ts` へ移動し、開発ユーティリティであることを明示
+   - ロジック自体は変更しない
 
 3. **`package.json` の整理**
    - `dependencies` から `express`, `cors` を削除
@@ -79,7 +84,7 @@ Phase 4  Vite + Preact 導入（フロントエンド再構築）
 | 操作 | ファイル |
 |------|----------|
 | 削除 | `server.js` |
-| 削除 | `getBadgeTexture.ts` |
+| 移動（任意） | `getBadgeTexture.ts` → `tools/getBadgeTexture.ts` |
 | 編集 | `package.json` |
 
 ### 完了条件
@@ -329,8 +334,10 @@ src/
 
 4. **tagImages の ES Module 化**
    - `public/js/tagImages.js` → `src/data/tagImages.ts`
-   - `window.getTagIcon` → named export `getTagIcon()`
+   - `window.getTagIcon` グローバル → named export `getTagIcon()` に変更
+   - データのマッピング自体はそのまま移行（`getBadgeTexture.ts` で採取した値なので手を加えない）
    - タグ名のリテラル型を追加
+   - 新バッジを追加する際のワークフロー: `tools/getBadgeTexture.ts` を実行 → 出力された URL を `src/data/tagImages.ts` に追記
 
 5. **`convertIconUrl` の共有**
    - `src/lib/url.ts` と `worker/lib/url.ts` を同一ソースにする
