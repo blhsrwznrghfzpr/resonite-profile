@@ -205,6 +205,12 @@ app.get('/user/:id', async c => {
 
 app.all('*', async c => {
   const response = await c.env.ASSETS.fetch(c.req.raw);
+  if (response.status === 404) {
+    const indexResponse = await c.env.ASSETS.fetch(
+      new Request(new URL('/index.html', c.req.url))
+    );
+    return withRequestId(indexResponse, c.get('requestId'));
+  }
   return withRequestId(response, c.get('requestId'));
 });
 
