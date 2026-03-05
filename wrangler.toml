@@ -1,6 +1,7 @@
 name = "resonite-profile"
 main = "worker/index.ts"
 compatibility_date = "2025-01-01"
+account_id = "d407b0b4d2f6dc510a7565342878510e"
 
 [assets]
 directory = "./dist"
@@ -11,4 +12,4 @@ binding = "ASSETS"
 # Then replace the id below with the actual namespace ID from the output.
 [[kv_namespaces]]
 binding = "SEARCH_CACHE"
-id = "af807d5ccda14587ae8d3c1423a67c68"
+id = "c557888a9bb344b09117d49c987aeb45"
