@@ -39,10 +39,15 @@ body {
   margin: 0;
 }
 
+.header-top {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
 .github-link {
-  position: absolute;
-  top: 20px;
-  right: 20px;
   padding: 6px 12px;
   background: rgba(255, 255, 255, 0.2);
   color: white;
@@ -55,6 +60,26 @@ body {
 
 .github-link:hover {
   background: rgba(255, 255, 255, 0.3);
+}
+
+.language-select {
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  font-size: 0.85em;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.language-select:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.language-select option {
+  color: #333;
+  background: white;
 }
 
 .search-section {

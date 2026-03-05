@@ -1,4 +1,5 @@
 import { convertIconUrl, DEFAULT_AVATAR_URL } from '../lib/url.ts';
+import { useI18n, formatMessage } from '../i18n/context.tsx';
 import type { World } from '../types.ts';
 
 interface Props {
@@ -20,11 +21,11 @@ function safeStripHtmlTags(text: string): string {
 }
 
 export function WorldGrid({ worlds }: Props) {
+  const { locale, t } = useI18n();
+
   if (worlds.length === 0) {
     return (
-      <div style="text-align: center; color: #999;">
-        公開されたワールドがありません
-      </div>
+      <div style="text-align: center; color: #999;">{t.worlds.noWorlds}</div>
     );
   }
 
@@ -35,7 +36,7 @@ export function WorldGrid({ worlds }: Props) {
           ? convertIconUrl(world.thumbnailUri)
           : DEFAULT_AVATAR_URL;
         const publishDate = world.firstPublishTime
-          ? new Date(world.firstPublishTime).toLocaleDateString('ja-JP')
+          ? new Date(world.firstPublishTime).toLocaleDateString(locale)
           : '';
         const worldName = safeStripHtmlTags(world.name ?? '');
         const worldDescription = world.description
@@ -61,7 +62,9 @@ export function WorldGrid({ worlds }: Props) {
               />
               <div class="world-content">
                 <div class="world-title">{worldName}</div>
-                <div class="world-date">公開日: {publishDate}</div>
+                <div class="world-date">
+                  {formatMessage(t.worlds.publishDate, { date: publishDate })}
+                </div>
                 {worldDescription && (
                   <div class="world-description">{worldDescription}</div>
                 )}

@@ -5,6 +5,7 @@ import { convertIconUrl, DEFAULT_AVATAR_URL } from '../lib/url.ts';
 import { CopyableText } from './CopyableText.tsx';
 import { TagBadge } from './TagBadge.tsx';
 import { WorldGrid } from './WorldGrid.tsx';
+import { useI18n, formatMessage } from '../i18n/context.tsx';
 import type { User, Session, World } from '../types.ts';
 
 interface Props {
@@ -21,13 +22,20 @@ function safeStripHtmlTags(text: string): string {
   }
 }
 
-function updateMetaTags(user: User) {
+function updateMetaTags(
+  user: User,
+  locale: string,
+  t: { userDetail: { metaDescription: string }; header: { title: string } }
+) {
   const username = user.username ?? 'Unknown User';
   const avatarUrl = convertIconUrl(user.profile?.iconUrl);
   const registrationDate = new Date(
     user.registrationDate ?? ''
-  ).toLocaleDateString('ja-JP');
-  const description = `${username} • ${registrationDate}登録`;
+  ).toLocaleDateString(locale);
+  const description = formatMessage(t.userDetail.metaDescription, {
+    username,
+    date: registrationDate,
+  });
 
   document
     .querySelectorAll('meta[property^="og:"], meta[name^="twitter:"]')
@@ -40,7 +48,7 @@ function updateMetaTags(user: User) {
       { property: 'og:image', content: avatarUrl },
       { property: 'og:url', content: window.location.href },
       { property: 'og:type', content: 'profile' },
-      { property: 'og:site_name', content: 'Resonite ユーザー検索' },
+      { property: 'og:site_name', content: t.header.title },
       { name: 'twitter:card', content: 'summary' },
       { name: 'twitter:title', content: `${username} - Resonite Profile` },
       { name: 'twitter:description', content: description },
@@ -58,6 +66,7 @@ function updateMetaTags(user: User) {
 
 export function UserDetailPage({ id }: Props) {
   const { route } = useLocation();
+  const { locale, t } = useI18n();
   const [user, setUser] = useState<User | null>(null);
   const [currentSession, setCurrentSession] = useState<Session | null>(null);
   const [worlds, setWorlds] = useState<World[] | null>(null);
@@ -93,7 +102,7 @@ export function UserDetailPage({ id }: Props) {
       const u = userResult.value;
       setUser(u);
       document.title = `${u.username} - Resonite Profile`;
-      updateMetaTags(u);
+      updateMetaTags(u, locale, t);
 
       if (sessionsResult.status === 'fulfilled') {
         const session = sessionsResult.value.find(s =>
@@ -110,6 +119,13 @@ export function UserDetailPage({ id }: Props) {
       cancelled = true;
     };
   }, [id]);
+
+  // Update meta tags when locale changes without re-fetching data
+  useEffect(() => {
+    if (!user) return;
+    document.title = `${user.username} - Resonite Profile`;
+    updateMetaTags(user, locale, t);
+  }, [locale, t]);
 
   useEffect(() => {
     if (!user) return;
@@ -135,7 +151,7 @@ export function UserDetailPage({ id }: Props) {
   if (!id) {
     return (
       <div class="search-section">
-        <div class="error">ユーザーIDが指定されていません</div>
+        <div class="error">{t.userDetail.missingId}</div>
       </div>
     );
   }
@@ -143,7 +159,7 @@ export function UserDetailPage({ id }: Props) {
   if (loading) {
     return (
       <div class="search-section">
-        <div class="loading">ユーザー情報を読み込み中...</div>
+        <div class="loading">{t.userDetail.loading}</div>
       </div>
     );
   }
@@ -152,17 +168,19 @@ export function UserDetailPage({ id }: Props) {
     return (
       <div class="search-section">
         <div class="error">
-          エラーが発生しました: {error ?? 'Unknown error'}
+          {formatMessage(t.userDetail.error, {
+            message: error ?? 'Unknown error',
+          })}
         </div>
       </div>
     );
   }
 
   const registrationDate = user.registrationDate
-    ? new Date(user.registrationDate).toLocaleDateString('ja-JP')
+    ? new Date(user.registrationDate).toLocaleDateString(locale)
     : '';
   const migratedDate = user.migratedData?.registrationDate
-    ? new Date(user.migratedData.registrationDate).toLocaleDateString('ja-JP')
+    ? new Date(user.migratedData.registrationDate).toLocaleDateString(locale)
     : null;
 
   return (
@@ -173,7 +191,7 @@ export function UserDetailPage({ id }: Props) {
             onClick={goBack}
             style="background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;"
           >
-            ← 検索に戻る
+            {t.userDetail.backToSearch}
           </button>
         </div>
 
@@ -197,8 +215,20 @@ export function UserDetailPage({ id }: Props) {
                 class="user-dates"
                 style="font-size: 0.9em; color: #666; margin-top: 8px;"
               >
-                {registrationDate && <div>登録日: {registrationDate}</div>}
-                {migratedDate && <div>移行前登録日: {migratedDate}</div>}
+                {registrationDate && (
+                  <div>
+                    {formatMessage(t.userDetail.registrationDate, {
+                      date: registrationDate,
+                    })}
+                  </div>
+                )}
+                {migratedDate && (
+                  <div>
+                    {formatMessage(t.userDetail.migratedDate, {
+                      date: migratedDate,
+                    })}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -209,7 +239,7 @@ export function UserDetailPage({ id }: Props) {
               style="flex: 0 0 auto; max-width: 300px;"
             >
               <h4 style="margin: 0 0 8px 0; font-size: 1em; color: #333;">
-                現在のセッション
+                {t.userDetail.currentSession}
               </h4>
               <a
                 href={`https://go.resonite.com/session/${encodeURIComponent(currentSession.sessionId)}`}
@@ -223,7 +253,7 @@ export function UserDetailPage({ id }: Props) {
                   {currentSession.thumbnailUrl && (
                     <img
                       src={currentSession.thumbnailUrl}
-                      alt="セッションサムネイル"
+                      alt={t.userDetail.sessionThumbnail}
                       style="width: 100%; max-width: 200px; border-radius: 5px;"
                     />
                   )}
@@ -239,7 +269,7 @@ export function UserDetailPage({ id }: Props) {
         >
           {user.tags && user.tags.length > 0 && (
             <div class="detail-section">
-              <h3>バッジ</h3>
+              <h3>{t.userDetail.badges}</h3>
               <div class="tags-container">
                 {user.tags.map(tag => (
                   <TagBadge key={tag} tag={tag} showLabel />
@@ -250,7 +280,7 @@ export function UserDetailPage({ id }: Props) {
 
           <div class="detail-section">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-              <h3 style="margin: 0;">作成したワールド</h3>
+              <h3 style="margin: 0;">{t.userDetail.createdWorlds}</h3>
               <button
                 onClick={() => openAllWorlds(user!.id)}
                 style="background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9em; transition: background 0.2s ease;"
@@ -261,17 +291,17 @@ export function UserDetailPage({ id }: Props) {
                   (e.target as HTMLButtonElement).style.background = '#667eea';
                 }}
               >
-                すべて表示
+                {t.userDetail.showAll}
               </button>
             </div>
             <div style="margin-top: 10px;">
               {worlds === null && !worldsError ? (
                 <div style="text-align: center; color: #666;">
-                  読み込み中...
+                  {t.userDetail.worldsLoading}
                 </div>
               ) : worldsError ? (
                 <div style="text-align: center; color: #999;">
-                  ワールドの読み込みに失敗しました
+                  {t.userDetail.worldsError}
                 </div>
               ) : (
                 <WorldGrid worlds={worlds!} />
