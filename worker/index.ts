@@ -194,7 +194,7 @@ app.all('/api/*', c => {
 
 // ─── OGP pages ────────────────────────────────────────────────────────────────
 
-app.get('/:id', async c => {
+app.get('/:id{U-[^/]+}', async c => {
   const userId = c.req.param('id');
   const requestId = c.get('requestId');
   const response = await buildUserPage(c.req.raw, c.env, userId);
