@@ -41,7 +41,7 @@ export async function buildUserPage(
     <meta property="og:title" content="${escapeHtml(username)} - Resonite Profile" />
     <meta property="og:description" content="${escapeHtml(description)}" />
     <meta property="og:image" content="${escapeHtml(avatarUrl)}" />
-    <meta property="og:url" content="https://${escapeHtml(host)}/user/${escapeHtml(userId)}" />
+    <meta property="og:url" content="https://${escapeHtml(host)}/${escapeHtml(userId)}" />
     <meta property="og:type" content="profile" />
     <meta property="og:site_name" content="Resonite ユーザー検索" />
     <meta name="twitter:card" content="summary" />
