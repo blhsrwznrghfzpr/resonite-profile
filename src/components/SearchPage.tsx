@@ -3,6 +3,7 @@ import { useLocation } from 'preact-iso';
 import { searchUsers } from '../lib/api.ts';
 import { convertIconUrl, DEFAULT_AVATAR_URL } from '../lib/url.ts';
 import { TagBadge } from './TagBadge.tsx';
+import { useI18n, formatMessage } from '../i18n/context.tsx';
 import type { User } from '../types.ts';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
@@ -12,17 +13,18 @@ interface Props {
 
 export function SearchPage(_: Props) {
   const { route } = useLocation();
+  const { t } = useI18n();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<User[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    document.title = 'Resonite ユーザー検索';
+    document.title = t.header.title;
     document
       .querySelectorAll('meta[property^="og:"], meta[name^="twitter:"]')
       .forEach(el => el.remove());
-  }, []);
+  }, [t]);
 
   async function handleSearch() {
     if (!query.trim()) return;
@@ -49,21 +51,25 @@ export function SearchPage(_: Props) {
         <input
           type="text"
           class="search-input"
-          placeholder="ユーザー名を入力してください"
+          placeholder={t.search.placeholder}
           value={query}
           onInput={e => setQuery((e.target as HTMLInputElement).value)}
           onKeyPress={handleKeyPress}
           autofocus
         />
         <button class="search-btn" onClick={handleSearch} disabled={loading}>
-          検索
+          {t.search.button}
         </button>
       </div>
 
-      {loading && <div class="loading">検索中...</div>}
-      {error && <div class="error">エラーが発生しました: {error}</div>}
+      {loading && <div class="loading">{t.search.loading}</div>}
+      {error && (
+        <div class="error">
+          {formatMessage(t.search.error, { message: error })}
+        </div>
+      )}
       {results !== null && results.length === 0 && (
-        <div class="no-results">ユーザーが見つかりませんでした</div>
+        <div class="no-results">{t.search.noResults}</div>
       )}
       {results && results.length > 0 && (
         <div>
