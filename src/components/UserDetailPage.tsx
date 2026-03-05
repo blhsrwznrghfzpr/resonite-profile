@@ -120,6 +120,13 @@ export function UserDetailPage({ id }: Props) {
     };
   }, [id]);
 
+  // Update meta tags when locale changes without re-fetching data
+  useEffect(() => {
+    if (!user) return;
+    document.title = `${user.username} - Resonite Profile`;
+    updateMetaTags(user, locale, t);
+  }, [locale, t]);
+
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
