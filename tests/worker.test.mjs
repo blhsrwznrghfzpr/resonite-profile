@@ -765,6 +765,49 @@ test('GET /api/users/:id proxies upstream payload', async () => {
   assert.equal(response.headers.get('X-Worker-Cache'), 'MISS');
 });
 
+test('GET /api/users/:id/mintedcolors proxies upstream payload', async () => {
+  installWorkerGlobals({
+    fetchImpl: async (url, init) => {
+      assert.equal(url, 'https://api.resonite.com/users/U-DETAIL/mintedcolors');
+      assert.ok(init?.headers);
+      assert.ok(init.headers['X-Request-Id']);
+      return createJsonResponse([
+        {
+          ownerUserId: 'U-DETAIL',
+          color: { r: 17, g: 34, b: 51, a: 255 },
+          timestamp: '2026-04-01T07:11:37.0320999Z',
+          counterMints: ['U-AAA', 'U-BBB'],
+        },
+      ]);
+    },
+  });
+
+  const env = createEnv();
+  const request = new Request(
+    'https://worker.example/api/users/U-DETAIL/mintedcolors',
+    {
+      method: 'GET',
+      headers: {
+        Origin: 'https://allowed.example',
+      },
+    }
+  );
+
+  const response = await worker.fetch(request, env);
+  const payload = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(payload[0].color.r, 17);
+  assert.equal(payload[0].color.g, 34);
+  assert.equal(payload[0].color.b, 51);
+  assert.equal(payload[0].counterMints.length, 2);
+  assert.equal(
+    response.headers.get('Access-Control-Allow-Origin'),
+    'https://allowed.example'
+  );
+  assert.equal(response.headers.get('X-Worker-Cache'), 'MISS');
+});
+
 test('GET /api/users/:id returns upstream status payload with Server-Timing on non-ok', async () => {
   installWorkerGlobals({
     fetchImpl: async () =>

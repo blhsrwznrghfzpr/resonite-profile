@@ -19,6 +19,12 @@ export interface Translations {
     sessionThumbnail: string;
     badges: string;
     createdWorlds: string;
+    mintedColors: string;
+    mintedColorsLoading: string;
+    mintedColorsError: string;
+    mintedColorsEmpty: string;
+    mintedColorsRequestedBy: string;
+    showApiResponse: string;
     showAll: string;
     worldsLoading: string;
     worldsError: string;

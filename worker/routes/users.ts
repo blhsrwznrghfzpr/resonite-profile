@@ -95,9 +95,31 @@ export async function handleUserDetail(
     );
   }
 
+  const mintedColorsPathSuffix = '/mintedcolors';
+  const isMintedColorsRequest = userId.endsWith(mintedColorsPathSuffix);
+  const baseUserId = isMintedColorsRequest
+    ? userId.slice(0, -mintedColorsPathSuffix.length)
+    : userId;
+
+  if (!baseUserId) {
+    return asHeadResponse(
+      withCors(
+        errorResponse(400, 'User ID is required'),
+        request,
+        env,
+        requestId
+      ),
+      request.method
+    );
+  }
+
+  const upstreamPath = isMintedColorsRequest
+    ? `/users/${encodeURIComponent(baseUserId)}/mintedcolors`
+    : `/users/${encodeURIComponent(baseUserId)}`;
+
   const response = await proxyGet(
     request,
-    `${RESONITE_API_BASE}/users/${encodeURIComponent(userId)}`,
+    `${RESONITE_API_BASE}${upstreamPath}`,
     USER_DETAIL_CACHE_CONTROL,
     runtimeConfig,
     { requestId }

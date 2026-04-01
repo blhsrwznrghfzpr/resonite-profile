@@ -1,4 +1,4 @@
-import type { User, Session, World } from '../types.ts';
+import type { User, Session, World, MintedColorEntry } from '../types.ts';
 
 const API_BASE =
   (import.meta as unknown as { env: Record<string, string | undefined> }).env
@@ -44,4 +44,15 @@ export async function fetchUserWorlds(userId: string): Promise<World[]> {
   if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
   const data = (await res.json()) as { records?: World[] };
   return data.records ?? [];
+}
+
+export async function fetchUserMintedColors(
+  userId: string
+): Promise<MintedColorEntry[]> {
+  const res = await fetch(
+    `${API_BASE}/api/users/${encodeURIComponent(userId)}/mintedcolors`
+  );
+  if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+  const data = (await res.json()) as unknown;
+  return Array.isArray(data) ? (data as MintedColorEntry[]) : [];
 }

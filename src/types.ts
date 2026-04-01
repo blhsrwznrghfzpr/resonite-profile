@@ -35,3 +35,15 @@ export interface World {
   thumbnailUri?: string;
   firstPublishTime?: string;
 }
+
+export interface MintedColorEntry {
+  ownerUserId?: string;
+  color?: {
+    r: number;
+    g: number;
+    b: number;
+    a?: number;
+  };
+  timestamp?: string;
+  counterMints?: string[];
+}
