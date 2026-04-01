@@ -306,21 +306,9 @@ export function UserDetailPage({ id }: Props) {
             </div>
           )}
 
-          <div class="detail-section">
-            <h3>{t.userDetail.mintedColors}</h3>
-            {mintedColors === null && !mintedColorsError ? (
-              <div style="text-align: center; color: #666;">
-                {t.userDetail.mintedColorsLoading}
-              </div>
-            ) : mintedColorsError ? (
-              <div style="text-align: center; color: #999;">
-                {t.userDetail.mintedColorsError}
-              </div>
-            ) : mintedColors!.length === 0 ? (
-              <div style="text-align: center; color: #999;">
-                {t.userDetail.mintedColorsEmpty}
-              </div>
-            ) : (
+          {mintedColors && mintedColors.length > 0 && !mintedColorsError && (
+            <div class="detail-section">
+              <h3>{t.userDetail.mintedColors}</h3>
               <div class="minted-colors-grid">
                 {mintedColors!.map((entry, index) => {
                   const hex = normalizeMintedColorHex(entry);
@@ -349,8 +337,8 @@ export function UserDetailPage({ id }: Props) {
                   );
                 })}
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
           <div class="detail-section">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
