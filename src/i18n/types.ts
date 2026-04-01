@@ -24,6 +24,7 @@ export interface Translations {
     mintedColorsError: string;
     mintedColorsEmpty: string;
     mintedColorsRequestedBy: string;
+    showApiResponse: string;
     showAll: string;
     worldsLoading: string;
     worldsError: string;

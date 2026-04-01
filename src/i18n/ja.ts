@@ -26,6 +26,7 @@ export const ja: Translations = {
     mintedColorsError: 'ミント済みカラーの読み込みに失敗しました',
     mintedColorsEmpty: 'ミント済みカラーはまだありません',
     mintedColorsRequestedBy: '希望者数: {count}',
+    showApiResponse: 'APIレスポンスを開く',
     showAll: 'すべて表示',
     worldsLoading: '読み込み中...',
     worldsError: 'ワールドの読み込みに失敗しました',

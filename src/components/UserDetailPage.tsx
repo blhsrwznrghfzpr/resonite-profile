@@ -308,7 +308,28 @@ export function UserDetailPage({ id }: Props) {
 
           {mintedColors && mintedColors.length > 0 && !mintedColorsError && (
             <div class="detail-section">
-              <h3>{t.userDetail.mintedColors}</h3>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="margin: 0;">{t.userDetail.mintedColors}</h3>
+                <button
+                  onClick={() =>
+                    window.open(
+                      `https://api.resonite.com/users/${encodeURIComponent(user.id)}/mintedcolors`,
+                      '_blank'
+                    )
+                  }
+                  style="background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9em; transition: background 0.2s ease;"
+                  onMouseOver={e => {
+                    (e.target as HTMLButtonElement).style.background =
+                      '#5a67d8';
+                  }}
+                  onMouseOut={e => {
+                    (e.target as HTMLButtonElement).style.background =
+                      '#667eea';
+                  }}
+                >
+                  {t.userDetail.showApiResponse}
+                </button>
+              </div>
               <div class="minted-colors-grid">
                 {mintedColors!.map((entry, index) => {
                   const hex = normalizeMintedColorHex(entry);

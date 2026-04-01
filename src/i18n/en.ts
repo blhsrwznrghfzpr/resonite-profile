@@ -26,6 +26,7 @@ export const en: Translations = {
     mintedColorsError: 'Failed to load minted colors',
     mintedColorsEmpty: 'No minted colors yet',
     mintedColorsRequestedBy: 'Requested by: {count}',
+    showApiResponse: 'Open API response',
     showAll: 'Show all',
     worldsLoading: 'Loading...',
     worldsError: 'Failed to load worlds',
