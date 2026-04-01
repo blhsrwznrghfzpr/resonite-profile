@@ -1,12 +1,17 @@
 import { useEffect, useState } from 'preact/hooks';
 import { useLocation } from 'preact-iso';
-import { fetchUser, fetchSessions, fetchUserWorlds } from '../lib/api.ts';
+import {
+  fetchUser,
+  fetchSessions,
+  fetchUserWorlds,
+  fetchUserMintedColors,
+} from '../lib/api.ts';
 import { convertIconUrl, DEFAULT_AVATAR_URL } from '../lib/url.ts';
 import { CopyableText } from './CopyableText.tsx';
 import { TagBadge } from './TagBadge.tsx';
 import { WorldGrid } from './WorldGrid.tsx';
 import { useI18n, formatMessage } from '../i18n/context.tsx';
-import type { User, Session, World } from '../types.ts';
+import type { User, Session, World, MintedColorEntry } from '../types.ts';
 
 interface Props {
   path?: string;
@@ -71,6 +76,10 @@ export function UserDetailPage({ id }: Props) {
   const [currentSession, setCurrentSession] = useState<Session | null>(null);
   const [worlds, setWorlds] = useState<World[] | null>(null);
   const [worldsError, setWorldsError] = useState(false);
+  const [mintedColors, setMintedColors] = useState<MintedColorEntry[] | null>(
+    null
+  );
+  const [mintedColorsError, setMintedColorsError] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -85,6 +94,8 @@ export function UserDetailPage({ id }: Props) {
       setCurrentSession(null);
       setWorlds(null);
       setWorldsError(false);
+      setMintedColors(null);
+      setMintedColorsError(false);
 
       const [userResult, sessionsResult] = await Promise.allSettled([
         fetchUser(id!),
@@ -137,6 +148,23 @@ export function UserDetailPage({ id }: Props) {
       })
       .catch(() => {
         if (!cancelled) setWorldsError(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+
+    fetchUserMintedColors(user.id)
+      .then(colors => {
+        if (!cancelled) setMintedColors(colors);
+      })
+      .catch(() => {
+        if (!cancelled) setMintedColorsError(true);
       });
 
     return () => {
@@ -279,6 +307,52 @@ export function UserDetailPage({ id }: Props) {
           )}
 
           <div class="detail-section">
+            <h3>{t.userDetail.mintedColors}</h3>
+            {mintedColors === null && !mintedColorsError ? (
+              <div style="text-align: center; color: #666;">
+                {t.userDetail.mintedColorsLoading}
+              </div>
+            ) : mintedColorsError ? (
+              <div style="text-align: center; color: #999;">
+                {t.userDetail.mintedColorsError}
+              </div>
+            ) : mintedColors!.length === 0 ? (
+              <div style="text-align: center; color: #999;">
+                {t.userDetail.mintedColorsEmpty}
+              </div>
+            ) : (
+              <div class="minted-colors-grid">
+                {mintedColors!.map((entry, index) => {
+                  const hex = normalizeMintedColorHex(entry);
+                  if (!hex) return null;
+                  return (
+                    <div class="minted-color-card" key={`${hex}-${index}`}>
+                      <div
+                        class="minted-color-swatch"
+                        style={`background: ${hex};`}
+                        title={hex}
+                      />
+                      <div class="minted-color-meta">
+                        <CopyableText text={hex} class="minted-color-hex" />
+                        <div class="minted-color-demand">
+                          {formatMessage(t.userDetail.mintedColorsRequestedBy, {
+                            count: getMintedColorRequestCount(entry),
+                          })}
+                        </div>
+                        {entry.timestamp && (
+                          <div class="minted-color-demand">
+                            {new Date(entry.timestamp).toLocaleString(locale)}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          <div class="detail-section">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
               <h3 style="margin: 0;">{t.userDetail.createdWorlds}</h3>
               <button
@@ -312,6 +386,22 @@ export function UserDetailPage({ id }: Props) {
       </div>
     </div>
   );
+}
+
+function normalizeMintedColorHex(entry: MintedColorEntry): string | null {
+  if (!entry.color) return null;
+  const { r, g, b } = entry.color;
+  if (![r, g, b].every(value => Number.isInteger(value))) return null;
+  if ([r, g, b].some(value => value < 0 || value > 255)) return null;
+
+  const toHex = (value: number) =>
+    value.toString(16).toUpperCase().padStart(2, '0');
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+
+function getMintedColorRequestCount(entry: MintedColorEntry): number {
+  if (Array.isArray(entry.counterMints)) return entry.counterMints.length;
+  return 0;
 }
 
 function openAllWorlds(userId: string) {
