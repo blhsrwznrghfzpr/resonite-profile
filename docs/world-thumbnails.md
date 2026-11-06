@@ -1,9 +1,14 @@
-# World thumbnail projection
+# World thumbnail projection and hover rotation
 
-Created-world cards render 2:1 equirectangular thumbnails as a static perspective
-view. The camera looks at the centre of the panorama with a 90° horizontal field
+Created-world cards render 2:1 equirectangular thumbnails as a perspective
+view that stays still by default and rotates only while the mouse pointer hovers
+over that thumbnail. The camera looks at the centre of the panorama with a 90° horizontal field
 of view; the 640 × 320 output corresponds to the central half of a square view.
-There are no drag controls, animation loops, WebGL contexts, or new dependencies.
+A complete turn takes about 60 seconds. There are no drag controls or new dependencies.
+There is no rotation toggle button. Leaving the thumbnail stops it in place.
+Each card is independent; hovering its title or description does not rotate it.
+Touch and pen events do not start rotation or leave a sticky hover state.
+`prefers-reduced-motion: reduce` always disables rotation, including on hover.
 The existing card link still opens the world on go.resonite.com.
 
 The approach is informed by
@@ -18,8 +23,16 @@ port of its projection-matrix implementation.
   their height (within one pixel) are treated as panoramas. Other ratios and the
   default avatar are displayed normally. An ordinary 2:1 photograph cannot be
   distinguished from a panorama by this heuristic.
-- Images are lazy-loaded. Each loaded panorama is projected once, and its canvas
-  is retained while the card is mounted. The browser handles source-image HTTP
+- Images are lazy-loaded. Each loaded panorama is decoded once. A static
+  perspective canvas remains available as a fallback; a WebGL shader rotates the
+  view using the same decoded pixels, without fetching another image. Textures
+  are uploaded once and retained while the card is mounted. Rendering is capped
+  at 20 frames per second and stops entirely when the card is offscreen, the
+  document is hidden, the mouse is not hovering, or reduced motion is requested.
+  Pausing preserves the viewing direction, and resuming does not jump ahead.
+  GPU resources, observers and frame callbacks are released on unmount.
+  No WebGL/IntersectionObserver support or context loss leaves the static
+  projection visible. The browser handles source-image HTTP
   caching; there is no unbounded global image or canvas cache.
 - Input readback is capped at 2048 × 1024 pixels. The generated preview is not
   uploaded or sent to another service.
@@ -42,7 +55,8 @@ port of its projection-matrix implementation.
 
 ## Verification
 
-Run `npm run test:thumbnail` for the projection's orientation, FOV, aspect-ratio
+Run `npm run test:thumbnail` for rotation timing, visibility/paused/reduced-motion behaviour, GPU fallback,
+texture reuse, cleanup and the projection's orientation, FOV, aspect-ratio
 handling, bilinear sampling and alpha tests, plus the same-origin image route's
 CORS-independent byte delivery, URL restrictions, type/size limits, failures,
 HEAD handling, timeout and caching tests. Run `npm run build` and `npm run lint`
@@ -53,3 +67,8 @@ host without CORS, a broken URL and a missing thumbnail. Confirm the panorama's
 centre and orientation, the world link and accessible image label, and repeat on
 mobile, after reload, and after changing the thumbnail URL. Canvas failure must
 leave the original image visible, and a broken fallback must not retry forever.
+
+For rotation QA, verify static initial display, movement only during mouse hover, pointer leave/cancel,
+touch remaining static, independent cards,
+scrolling offscreen and back, background-tab suspension, reduced-motion settings,
+and the wraparound seam. Rotation must not add image or API requests.

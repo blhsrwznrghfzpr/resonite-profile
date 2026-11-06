@@ -23,7 +23,7 @@
     "test:staging-smoke:pipeline": "bash scripts/run-staging-smoke-pipeline.sh .env.staging-smoke normal",
     "test:alerts:validate": "bash scripts/validate-cloudflare-alert-thresholds.sh docs/cloudflare-alert-thresholds-template.json",
     "tools:getBadgeTexture": "tsx tools/getBadgeTexture.mts",
-    "test:thumbnail": "node --experimental-strip-types --test tests/world-thumbnail.test.mjs tests/world-thumbnail-proxy.test.mjs"
+    "test:thumbnail": "node --experimental-strip-types --test tests/world-thumbnail.test.mjs tests/world-thumbnail-proxy.test.mjs tests/panorama-motion.test.mjs"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260305.0",
