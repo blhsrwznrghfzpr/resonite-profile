@@ -19,7 +19,10 @@ export function createPanoramaRenderer(
     depth: false,
     preserveDrawingBuffer: true,
   });
-  if (!gl) return null;
+  if (!gl) {
+    console.warn('Panorama rotation: WebGL is unavailable');
+    return null;
+  }
   const shaders: WebGLShader[] = [];
   const program = gl.createProgram();
   const buffer = gl.createBuffer();
@@ -50,12 +53,14 @@ export function createPanoramaRenderer(
       gl.shaderSource(shader, code);
       gl.compileShader(shader);
       if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS))
-        throw new Error('Shader compilation failed');
+        throw new Error(
+          `Shader compilation failed: ${gl.getShaderInfoLog(shader)}`
+        );
       gl.attachShader(program, shader);
     }
     gl.linkProgram(program);
     if (!gl.getProgramParameter(program, gl.LINK_STATUS))
-      throw new Error('Shader link failed');
+      throw new Error(`Shader link failed: ${gl.getProgramInfoLog(program)}`);
     gl.useProgram(program);
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.bufferData(
@@ -85,7 +90,8 @@ export function createPanoramaRenderer(
       },
       dispose,
     };
-  } catch {
+  } catch (error) {
+    console.warn('Panorama rotation: using static fallback', error);
     dispose();
     return null;
   }
@@ -99,6 +105,7 @@ export function startPanoramaMotion(
   onReady: (ready: boolean) => void,
   paused = false
 ) {
+  canvas.setAttribute('data-motion-state', 'waiting');
   let renderer: ReturnType<typeof createPanoramaRenderer> = null;
   let visible = false;
   let stopped = false;
@@ -113,6 +120,7 @@ export function startPanoramaMotion(
     previous = null;
   };
   function fail() {
+    canvas.setAttribute('data-motion-state', 'fallback');
     stopped = true;
     cancel();
     onReady(false);
@@ -136,6 +144,7 @@ export function startPanoramaMotion(
   }
   function reconcile() {
     cancel();
+    canvas.setAttribute('data-motion-state', 'paused');
     if (
       disposed ||
       stopped ||
@@ -159,6 +168,7 @@ export function startPanoramaMotion(
       }
       onReady(true);
     }
+    canvas.setAttribute('data-motion-state', 'running');
     frame = requestAnimationFrame(tick);
   }
   const observer =

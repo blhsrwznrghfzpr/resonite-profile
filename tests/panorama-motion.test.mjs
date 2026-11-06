@@ -110,6 +110,7 @@ function harness({ reduced = false, supported = true } = {}) {
   ])
     gl[method] = () => {};
   const canvas = new globalThis.EventTarget();
+  canvas.setAttribute = () => {};
   canvas.width = 640;
   canvas.height = 320;
   canvas.getContext = () => {
