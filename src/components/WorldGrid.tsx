@@ -1,3 +1,4 @@
+import { useState } from 'preact/hooks';
 import { convertIconUrl, DEFAULT_AVATAR_URL } from '../lib/url.ts';
 import { useI18n, formatMessage } from '../i18n/context.tsx';
 import { WorldThumbnail } from './WorldThumbnail.tsx';
@@ -22,6 +23,7 @@ function safeStripHtmlTags(text: string): string {
 }
 
 export function WorldGrid({ worlds }: Props) {
+  const [rotate, setRotate] = useState(true);
   const { locale, t } = useI18n();
 
   if (worlds.length === 0) {
@@ -31,42 +33,57 @@ export function WorldGrid({ worlds }: Props) {
   }
 
   return (
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
-      {worlds.map(world => {
-        const thumbnailUrl = world.thumbnailUri
-          ? convertIconUrl(world.thumbnailUri)
-          : DEFAULT_AVATAR_URL;
-        const publishDate = world.firstPublishTime
-          ? new Date(world.firstPublishTime).toLocaleDateString(locale)
-          : '';
-        const worldName = safeStripHtmlTags(world.name ?? '');
-        const worldDescription = world.description
-          ? truncateText(safeStripHtmlTags(world.description), 120)
-          : '';
-        const worldUrl = `https://go.resonite.com/world/${encodeURIComponent(world.ownerId)}/${encodeURIComponent(world.id)}`;
+    <>
+      <div style="display: flex; justify-content: flex-end; margin-bottom: 12px;">
+        <button
+          type="button"
+          aria-pressed={!rotate}
+          onClick={() => setRotate(value => !value)}
+        >
+          {rotate ? t.worlds.pauseRotation : t.worlds.resumeRotation}
+        </button>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+        {worlds.map(world => {
+          const thumbnailUrl = world.thumbnailUri
+            ? convertIconUrl(world.thumbnailUri)
+            : DEFAULT_AVATAR_URL;
+          const publishDate = world.firstPublishTime
+            ? new Date(world.firstPublishTime).toLocaleDateString(locale)
+            : '';
+          const worldName = safeStripHtmlTags(world.name ?? '');
+          const worldDescription = world.description
+            ? truncateText(safeStripHtmlTags(world.description), 120)
+            : '';
+          const worldUrl = `https://go.resonite.com/world/${encodeURIComponent(world.ownerId)}/${encodeURIComponent(world.id)}`;
 
-        return (
-          <a
-            key={world.id}
-            href={worldUrl}
-            target="_blank"
-            style="text-decoration: none; color: inherit;"
-          >
-            <div class="world-card world-item">
-              <WorldThumbnail src={thumbnailUrl} alt={worldName} />
-              <div class="world-content">
-                <div class="world-title">{worldName}</div>
-                <div class="world-date">
-                  {formatMessage(t.worlds.publishDate, { date: publishDate })}
+          return (
+            <a
+              key={world.id}
+              href={worldUrl}
+              target="_blank"
+              style="text-decoration: none; color: inherit;"
+            >
+              <div class="world-card world-item">
+                <WorldThumbnail
+                  src={thumbnailUrl}
+                  alt={worldName}
+                  rotate={rotate}
+                />
+                <div class="world-content">
+                  <div class="world-title">{worldName}</div>
+                  <div class="world-date">
+                    {formatMessage(t.worlds.publishDate, { date: publishDate })}
+                  </div>
+                  {worldDescription && (
+                    <div class="world-description">{worldDescription}</div>
+                  )}
                 </div>
-                {worldDescription && (
-                  <div class="world-description">{worldDescription}</div>
-                )}
               </div>
-            </div>
-          </a>
-        );
-      })}
-    </div>
+            </a>
+          );
+        })}
+      </div>
+    </>
   );
 }

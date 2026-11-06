@@ -1,4 +1,5 @@
-import { useRef, useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
+import { startPanoramaMotion } from '../lib/panoramaMotion.ts';
 import { DEFAULT_AVATAR_URL } from '../lib/url.ts';
 import {
   isPanorama,
@@ -11,6 +12,7 @@ import {
 interface Props {
   src: string;
   alt: string;
+  rotate?: boolean;
 }
 
 export function WorldThumbnail(props: Props) {
@@ -18,8 +20,12 @@ export function WorldThumbnail(props: Props) {
   return <ThumbnailImage key={props.src} {...props} />;
 }
 
-function ThumbnailImage({ src, alt }: Props) {
+function ThumbnailImage({ src, alt, rotate = true }: Props) {
   const canvas = useRef<HTMLCanvasElement>(null);
+  const motionCanvas = useRef<HTMLCanvasElement>(null);
+  const inputCanvas = useRef<HTMLCanvasElement | null>(null);
+  const motion = useRef<ReturnType<typeof startPanoramaMotion> | null>(null);
+  const [moving, setMoving] = useState(false);
   const [projected, setProjected] = useState(false);
   const [allowPixels, setAllowPixels] = useState(true);
   const [failed, setFailed] = useState(false);
@@ -28,6 +34,26 @@ function ThumbnailImage({ src, alt }: Props) {
     : allowPixels && src !== DEFAULT_AVATAR_URL
       ? worldThumbnailSource(src)
       : src;
+
+  useEffect(() => {
+    if (!projected || !motionCanvas.current || !inputCanvas.current) return;
+    const element = motionCanvas.current;
+    motion.current = startPanoramaMotion(
+      element,
+      inputCanvas.current,
+      element.closest('.world-card') ?? element.parentElement!,
+      setMoving,
+      !rotate
+    );
+    return () => {
+      motion.current?.dispose();
+      motion.current = null;
+    };
+  }, [projected]);
+
+  useEffect(() => {
+    motion.current?.setPaused(!rotate);
+  }, [rotate]);
 
   function handleLoad(image: HTMLImageElement) {
     if (
@@ -42,10 +68,12 @@ function ThumbnailImage({ src, alt }: Props) {
     try {
       const output = canvas.current?.getContext('2d');
       if (!output) return;
-      // Bound readback memory for large panoramas. No animation loop or
-      // persistent GPU context is needed for these non-interactive previews.
+      // Decode once for the static fallback and the rotating GPU texture.
       const input = document.createElement('canvas');
-      input.width = Math.min(image.naturalWidth, 2048);
+      input.width = Math.max(
+        2,
+        2 ** Math.floor(Math.log2(Math.min(image.naturalWidth, 2048)))
+      );
       input.height = Math.round(input.width / 2);
       const context = input.getContext('2d', { willReadFrequently: true });
       if (!context) return;
@@ -54,6 +82,7 @@ function ThumbnailImage({ src, alt }: Props) {
       const result = output.createImageData(THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT);
       result.data.set(projectPanorama(pixels.data, input.width, input.height));
       output.putImageData(result, 0, 0);
+      inputCanvas.current = input;
       setProjected(true);
     } catch {
       // A cross-origin or unsupported canvas must not remove the thumbnail.
@@ -87,7 +116,16 @@ function ThumbnailImage({ src, alt }: Props) {
         width={THUMBNAIL_WIDTH}
         height={THUMBNAIL_HEIGHT}
         class="world-thumbnail"
-        style={projected ? undefined : { display: 'none' }}
+        style={projected && !moving ? undefined : { display: 'none' }}
+        role="img"
+        aria-label={alt}
+      />
+      <canvas
+        ref={motionCanvas}
+        width={THUMBNAIL_WIDTH}
+        height={THUMBNAIL_HEIGHT}
+        class="world-thumbnail world-thumbnail-motion"
+        style={moving ? undefined : { display: 'none' }}
         role="img"
         aria-label={alt}
       />

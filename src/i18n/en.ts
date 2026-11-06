@@ -39,6 +39,8 @@ export const en: Translations = {
     fallback: 'Text selected',
   },
   worlds: {
+    pauseRotation: 'Pause thumbnail rotation',
+    resumeRotation: 'Resume thumbnail rotation',
     noWorlds: 'No published worlds',
     publishDate: 'Published: {date}',
   },
