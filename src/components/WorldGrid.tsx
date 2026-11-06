@@ -1,5 +1,6 @@
 import { convertIconUrl, DEFAULT_AVATAR_URL } from '../lib/url.ts';
 import { useI18n, formatMessage } from '../i18n/context.tsx';
+import { WorldThumbnail } from './WorldThumbnail.tsx';
 import type { World } from '../types.ts';
 
 interface Props {
@@ -52,14 +53,7 @@ export function WorldGrid({ worlds }: Props) {
             style="text-decoration: none; color: inherit;"
           >
             <div class="world-card world-item">
-              <img
-                src={thumbnailUrl}
-                alt={worldName}
-                class="world-thumbnail"
-                onError={e => {
-                  (e.target as HTMLImageElement).src = DEFAULT_AVATAR_URL;
-                }}
-              />
+              <WorldThumbnail src={thumbnailUrl} alt={worldName} />
               <div class="world-content">
                 <div class="world-title">{worldName}</div>
                 <div class="world-date">

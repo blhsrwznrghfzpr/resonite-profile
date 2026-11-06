@@ -24,6 +24,7 @@ import { getRateLimitConfig, checkRateLimit } from './middleware/rateLimit.ts';
 import { handleHealth } from './routes/health.ts';
 import { handleUsers, handleUserDetail } from './routes/users.ts';
 import { handleSessions } from './routes/sessions.ts';
+import { handleWorldThumbnail } from './routes/worldThumbnails.ts';
 import { handleWorlds } from './routes/worlds.ts';
 import { buildUserPage } from './routes/ogp.ts';
 
@@ -173,6 +174,24 @@ app.all('/api/worlds', async c =>
     c.get('requestId')
   )
 );
+
+app.all('/api/world-thumbnails/:hash', async c => {
+  const response = await handleWorldThumbnail(
+    c.req.raw,
+    c.req.param('hash'),
+    c.get('runtimeConfig')
+  );
+  return withCors(
+    attachRateLimitHeaders(
+      response,
+      c.get('rateState'),
+      c.get('rateLimitConfig')
+    ),
+    c.req.raw,
+    c.env,
+    c.get('requestId')
+  );
+});
 
 // Catch-all for unknown /api/* routes: return 404 with rate-limit headers
 app.all('/api/*', c => {
