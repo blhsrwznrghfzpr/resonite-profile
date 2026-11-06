@@ -66,3 +66,9 @@ export function projectPanorama(
   }
   return result;
 }
+
+/** Resonite assets do not grant every preview origin CORS canvas access. */
+export function worldThumbnailSource(src: string): string {
+  const match = /^https:\/\/assets\.resonite\.com\/([a-f0-9]{64})$/.exec(src);
+  return match ? `/api/world-thumbnails/${match[1]}` : src;
+}

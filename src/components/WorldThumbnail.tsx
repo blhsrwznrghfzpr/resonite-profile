@@ -2,6 +2,7 @@ import { useRef, useState } from 'preact/hooks';
 import { DEFAULT_AVATAR_URL } from '../lib/url.ts';
 import {
   isPanorama,
+  worldThumbnailSource,
   projectPanorama,
   THUMBNAIL_WIDTH,
   THUMBNAIL_HEIGHT,
@@ -22,7 +23,11 @@ function ThumbnailImage({ src, alt }: Props) {
   const [projected, setProjected] = useState(false);
   const [allowPixels, setAllowPixels] = useState(true);
   const [failed, setFailed] = useState(false);
-  const imageUrl = failed ? DEFAULT_AVATAR_URL : src;
+  const imageUrl = failed
+    ? DEFAULT_AVATAR_URL
+    : allowPixels && src !== DEFAULT_AVATAR_URL
+      ? worldThumbnailSource(src)
+      : src;
 
   function handleLoad(image: HTMLImageElement) {
     if (
@@ -70,7 +75,7 @@ function ThumbnailImage({ src, alt }: Props) {
         onLoad={event => handleLoad(event.currentTarget)}
         onError={() => {
           if (allowPixels && !failed) {
-            // Retry without CORS for hosts that permit display, not readback.
+            // Retry the original image if the proxy or a CORS request fails.
             setAllowPixels(false);
           } else if (!failed) {
             setFailed(true);

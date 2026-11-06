@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   isPanorama,
+  worldThumbnailSource,
   panoramaCoordinates,
   projectPanorama,
 } from '../src/lib/worldThumbnail.ts';
@@ -61,4 +62,21 @@ test('bilinear centre blends four pixels, including their alpha', () => {
     0, 0, 0, 0, 100, 0, 0, 100, 0, 100, 0, 100, 100, 100, 0, 200,
   ]);
   assert.deepEqual([...projectPanorama(input, 2, 2, 1, 1)], [50, 50, 0, 100]);
+});
+
+test('Resonite thumbnails use the same-origin route, never an arbitrary proxy target', () => {
+  const hash =
+    'd5affd43f43f55c35e0117406874778c27d391e4c4792060a3b65ffbc2f22b8e';
+  assert.equal(
+    worldThumbnailSource(`https://assets.resonite.com/${hash}`),
+    `/api/world-thumbnails/${hash}`
+  );
+  for (const url of [
+    'https://other.example/image',
+    `https://assets.resonite.com.evil/${hash}`,
+    `https://assets.resonite.com/${hash}?target=other`,
+    'https://assets.resonite.com/invalid',
+  ]) {
+    assert.equal(worldThumbnailSource(url), url);
+  }
 });

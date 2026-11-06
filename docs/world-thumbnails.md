@@ -23,17 +23,25 @@ port of its projection-matrix implementation.
   caching; there is no unbounded global image or canvas cache.
 - Input readback is capped at 2048 × 1024 pixels. The generated preview is not
   uploaded or sent to another service.
-- Projection requires the image host to allow anonymous CORS. If that request
-  fails, the component retries normal image display without CORS. Failed pixel
-  readback also leaves the original image visible. This fallback is intentionally
-  unprojected, so images on hosts without CORS can still appear distorted.
+- Resonite asset URLs are loaded through `/api/world-thumbnails/:hash` on the
+  same origin, because assets.resonite.com does not grant arbitrary preview
+  origins CORS access. The Worker accepts only a 64-character lowercase hex
+  hash, fetches only the fixed Resonite asset host, rejects redirects and
+  non-raster image types, and caps image responses at 8 MiB. It forwards no
+  client cookies or authorization. Successful images are cached for one day.
+- Other hosts still require anonymous CORS for projection. If the same-origin
+  image request or a third-party CORS request fails, the component retries the
+  original image without CORS. Failed pixel readback leaves that original image
+  visible. This emergency fallback may still show an unprojected image.
 - If normal loading fails, the default avatar is displayed. A failed default
   image is not retried endlessly. A changed thumbnail URL resets all state.
 
 ## Verification
 
 Run `npm run test:thumbnail` for the projection's orientation, FOV, aspect-ratio
-handling, bilinear sampling and alpha tests. Run `npm run build` and `npm run lint`
+handling, bilinear sampling and alpha tests, plus the same-origin image route's
+CORS-independent byte delivery, URL restrictions, type/size limits, failures,
+HEAD handling, timeout and caching tests. Run `npm run build` and `npm run lint`
 for the normal frontend checks.
 
 For browser QA, check a known panorama, an ordinary non-2:1 image, an image on a
