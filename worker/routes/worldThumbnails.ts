@@ -72,9 +72,15 @@ export async function handleWorldThumbnail(
 
     const headers = new Headers({
       'Content-Type': contentType,
-      'Cache-Control': 'public, max-age=86400, immutable',
+      'Cache-Control': response.headers.get('Cache-Control') ?? 'no-store',
       'X-Content-Type-Options': 'nosniff',
     });
+    // Keep the asset host's cache policy and validators, including Age so a
+    // cached upstream response does not receive a fresh lifetime here.
+    for (const name of ['Age', 'ETag', 'Last-Modified', 'Expires']) {
+      const value = response.headers.get(name);
+      if (value) headers.set(name, value);
+    }
     if (request.method === 'HEAD') return new Response(null, { headers });
 
     const chunks: Uint8Array[] = [];
@@ -102,7 +108,10 @@ export async function handleWorldThumbnail(
     const result = new Response(bytes, { headers });
     // Cache failures must not hide an otherwise usable image.
     try {
-      await caches.default.put(cacheKey, result.clone());
+      const policy = headers.get('Cache-Control') ?? '';
+      if (!/(?:no-store|private|no-cache)/i.test(policy)) {
+        await caches.default.put(cacheKey, result.clone());
+      }
     } catch {
       // A subsequent request can still use the browser cache or fetch again.
     }

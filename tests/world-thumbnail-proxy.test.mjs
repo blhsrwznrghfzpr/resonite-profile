@@ -21,7 +21,11 @@ function setup(fetchImpl, cache = {}) {
 }
 function imageResponse(body = new Uint8Array([82, 73, 70, 70]), headers = {}) {
   return new Response(body, {
-    headers: { 'Content-Type': 'image/webp', ...headers },
+    headers: {
+      'Content-Type': 'image/webp',
+      'Cache-Control': 'max-age=14400',
+      ...headers,
+    },
   });
 }
 
@@ -56,7 +60,7 @@ test('same-origin route returns binary image despite upstream having no CORS', a
   assert.equal(response.headers.get('Content-Type'), 'image/webp');
   assert.equal(response.headers.get('Set-Cookie'), null);
   assert.equal(response.headers.get('X-Content-Type-Options'), 'nosniff');
-  assert.match(response.headers.get('Cache-Control'), /max-age=86400/);
+  assert.match(response.headers.get('Cache-Control'), /max-age=14400/);
   assert.deepEqual(
     [...new Uint8Array(await response.arrayBuffer())],
     [82, 73, 70, 70]
@@ -182,4 +186,40 @@ test('timeout returns 504 and cache write failure preserves the image', async ()
     (await handleWorldThumbnail(new Request(url), hash, config)).status,
     200
   );
+});
+
+test('preserves upstream asset caching policy and age without extending lifetime', async () => {
+  setup(async () =>
+    imageResponse(undefined, {
+      'Cache-Control': 'max-age=14400',
+      Age: '111',
+      ETag: '"asset-version"',
+      'Last-Modified': 'Sun, 13 Sep 2026 15:56:51 GMT',
+    })
+  );
+  const response = await handleWorldThumbnail(new Request(url), hash, config);
+  assert.equal(response.headers.get('Cache-Control'), 'max-age=14400');
+  assert.equal(response.headers.get('Age'), '111');
+  assert.equal(response.headers.get('ETag'), '"asset-version"');
+  assert.equal(
+    response.headers.get('Last-Modified'),
+    'Sun, 13 Sep 2026 15:56:51 GMT'
+  );
+});
+
+test('does not cache assets when upstream caching is absent or restricted', async () => {
+  for (const policy of [null, 'private, max-age=60', 'no-store', 'no-cache']) {
+    setup(
+      async () => {
+        const response = imageResponse();
+        if (policy === null) response.headers.delete('Cache-Control');
+        else response.headers.set('Cache-Control', policy);
+        return response;
+      },
+      { put: () => assert.fail('restricted image must not be cached') }
+    );
+    const response = await handleWorldThumbnail(new Request(url), hash, config);
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get('Cache-Control'), policy ?? 'no-store');
+  }
 });

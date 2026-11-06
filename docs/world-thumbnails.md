@@ -28,7 +28,11 @@ port of its projection-matrix implementation.
   origins CORS access. The Worker accepts only a 64-character lowercase hex
   hash, fetches only the fixed Resonite asset host, rejects redirects and
   non-raster image types, and caps image responses at 8 MiB. It forwards no
-  client cookies or authorization. Successful images are cached for one day.
+  client cookies or authorization. It preserves upstream Cache-Control, Age and
+  validators instead of imposing a new TTL (the inspected Resonite images use
+  max-age=14400). The same-origin cache is keyed by asset hash, with no query
+  string fragmentation. Restricted or missing cache policies are not stored.
+  Existing API response caches, their TTLs and cache keys are unchanged.
 - Other hosts still require anonymous CORS for projection. If the same-origin
   image request or a third-party CORS request fails, the component retries the
   original image without CORS. Failed pixel readback leaves that original image
