@@ -39,8 +39,6 @@ export const ja: Translations = {
     fallback: 'テキストを選択しました',
   },
   worlds: {
-    pauseRotation: 'サムネイルの回転を停止',
-    resumeRotation: 'サムネイルの回転を再開',
     noWorlds: '公開されたワールドがありません',
     publishDate: '公開日: {date}',
   },

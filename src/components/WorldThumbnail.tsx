@@ -12,7 +12,6 @@ import {
 interface Props {
   src: string;
   alt: string;
-  rotate?: boolean;
 }
 
 export function WorldThumbnail(props: Props) {
@@ -20,7 +19,8 @@ export function WorldThumbnail(props: Props) {
   return <ThumbnailImage key={props.src} {...props} />;
 }
 
-function ThumbnailImage({ src, alt, rotate = true }: Props) {
+function ThumbnailImage({ src, alt }: Props) {
+  const mouseOver = useRef(false);
   const canvas = useRef<HTMLCanvasElement>(null);
   const motionCanvas = useRef<HTMLCanvasElement>(null);
   const inputCanvas = useRef<HTMLCanvasElement | null>(null);
@@ -41,19 +41,15 @@ function ThumbnailImage({ src, alt, rotate = true }: Props) {
     motion.current = startPanoramaMotion(
       element,
       inputCanvas.current,
-      element.closest('.world-card') ?? element.parentElement!,
+      element.parentElement!,
       setMoving,
-      !rotate
+      mouseOver.current
     );
     return () => {
       motion.current?.dispose();
       motion.current = null;
     };
   }, [projected]);
-
-  useEffect(() => {
-    motion.current?.setPaused(!rotate);
-  }, [rotate]);
 
   function handleLoad(image: HTMLImageElement) {
     if (
@@ -91,12 +87,23 @@ function ThumbnailImage({ src, alt, rotate = true }: Props) {
   }
 
   return (
-    <>
+    <div
+      class="world-thumbnail"
+      onPointerEnter={event => {
+        mouseOver.current = event.pointerType === 'mouse';
+      }}
+      onPointerLeave={() => {
+        mouseOver.current = false;
+      }}
+      onPointerCancel={() => {
+        mouseOver.current = false;
+      }}
+    >
       <img
         key={`${imageUrl}:${allowPixels}`}
         src={imageUrl}
         alt={alt}
-        class="world-thumbnail"
+        class="world-thumbnail-image"
         style={projected ? { display: 'none' } : undefined}
         crossOrigin={allowPixels && !failed ? 'anonymous' : undefined}
         loading="lazy"
@@ -115,7 +122,7 @@ function ThumbnailImage({ src, alt, rotate = true }: Props) {
         ref={canvas}
         width={THUMBNAIL_WIDTH}
         height={THUMBNAIL_HEIGHT}
-        class="world-thumbnail"
+        class="world-thumbnail-image"
         style={projected && !moving ? undefined : { display: 'none' }}
         role="img"
         aria-label={alt}
@@ -124,11 +131,11 @@ function ThumbnailImage({ src, alt, rotate = true }: Props) {
         ref={motionCanvas}
         width={THUMBNAIL_WIDTH}
         height={THUMBNAIL_HEIGHT}
-        class="world-thumbnail world-thumbnail-motion"
+        class="world-thumbnail-image world-thumbnail-motion"
         style={moving ? undefined : { display: 'none' }}
         role="img"
         aria-label={alt}
       />
-    </>
+    </div>
   );
 }

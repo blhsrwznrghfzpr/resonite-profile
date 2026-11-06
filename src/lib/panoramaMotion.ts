@@ -1,4 +1,4 @@
-export const ROTATION_PERIOD_MS = 90000;
+export const ROTATION_PERIOD_MS = 60000;
 export const FRAME_INTERVAL_MS = 1000 / 20;
 
 export function advanceRotation(yaw: number, elapsedMs: number): number {
@@ -103,9 +103,10 @@ export function startPanoramaMotion(
   source: HTMLCanvasElement,
   target: Element,
   onReady: (ready: boolean) => void,
-  paused = false
+  initiallyHovered = false
 ) {
   canvas.setAttribute('data-motion-state', 'waiting');
+  let paused = !initiallyHovered;
   let renderer: ReturnType<typeof createPanoramaRenderer> = null;
   let visible = false;
   let stopped = false;
@@ -178,19 +179,30 @@ export function startPanoramaMotion(
           visible = entries.some(entry => entry.isIntersecting);
           reconcile();
         });
+  function enter(event: Event) {
+    // Touch-generated compatibility mouse events must never start rotation.
+    paused = (event as PointerEvent).pointerType !== 'mouse';
+    reconcile();
+  }
+  function leave() {
+    paused = true;
+    reconcile();
+  }
+  target.addEventListener('pointerenter', enter);
+  target.addEventListener('pointerleave', leave);
+  target.addEventListener('pointercancel', leave);
   observer?.observe(target);
   document.addEventListener('visibilitychange', reconcile);
   media.addEventListener('change', reconcile);
   canvas.addEventListener('webglcontextlost', fail);
   return {
-    setPaused(value: boolean) {
-      paused = value;
-      reconcile();
-    },
     dispose() {
       disposed = true;
       cancel();
       observer?.disconnect();
+      target.removeEventListener('pointerenter', enter);
+      target.removeEventListener('pointerleave', leave);
+      target.removeEventListener('pointercancel', leave);
       document.removeEventListener('visibilitychange', reconcile);
       media.removeEventListener('change', reconcile);
       canvas.removeEventListener('webglcontextlost', fail);

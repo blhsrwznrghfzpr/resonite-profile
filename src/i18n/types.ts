@@ -37,8 +37,6 @@ export interface Translations {
     fallback: string;
   };
   worlds: {
-    pauseRotation: string;
-    resumeRotation: string;
     noWorlds: string;
     publishDate: string;
   };

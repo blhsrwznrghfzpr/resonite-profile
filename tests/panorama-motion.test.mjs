@@ -6,7 +6,7 @@ import {
   startPanoramaMotion,
 } from '../src/lib/panoramaMotion.ts';
 
-test('a complete rotation wraps smoothly and has a ninety-second period', () => {
+test('a complete rotation wraps smoothly and has a sixty-second period', () => {
   assert.equal(advanceRotation(0, ROTATION_PERIOD_MS), 0);
   assert.ok(
     Math.abs(advanceRotation(0, ROTATION_PERIOD_MS / 2) - Math.PI) < 1e-10
@@ -22,7 +22,7 @@ function harness({ reduced = false, supported = true } = {}) {
   media.matches = reduced;
   const frames = new Map();
   let id = 0;
-  let observer;
+  const observers = new Map();
   let uploads = 0;
   let draws = 0;
   let contexts = 0;
@@ -37,11 +37,14 @@ function harness({ reduced = false, supported = true } = {}) {
   globalThis.cancelAnimationFrame = frame => frames.delete(frame);
   globalThis.IntersectionObserver = class {
     constructor(callback) {
-      observer = callback;
+      this.callback = callback;
     }
-    observe() {}
+    observe(target) {
+      this.target = target;
+      observers.set(target, this.callback);
+    }
     disconnect() {
-      observer = null;
+      observers.delete(this.target);
     }
   };
   const gl = {
@@ -118,11 +121,37 @@ function harness({ reduced = false, supported = true } = {}) {
     return supported ? gl : null;
   };
   const ready = [];
-  const controller = startPanoramaMotion(canvas, {}, {}, value =>
+  const target = new globalThis.EventTarget();
+  const controller = startPanoramaMotion(canvas, {}, target, value =>
     ready.push(value)
   );
   return {
     controller,
+    enter(type = 'mouse') {
+      pointer(target, 'pointerenter', type);
+    },
+    leave() {
+      pointer(target, 'pointerleave');
+    },
+    cancel() {
+      pointer(target, 'pointercancel');
+    },
+    addCard() {
+      const target = new globalThis.EventTarget();
+      const controller = startPanoramaMotion(canvas, {}, target, () => {});
+      return {
+        controller,
+        visible() {
+          observers.get(target)?.([{ isIntersecting: true }]);
+        },
+        enter() {
+          pointer(target, 'pointerenter', 'mouse');
+        },
+        leave() {
+          pointer(target, 'pointerleave');
+        },
+      };
+    },
     frames,
     ready,
     canvas,
@@ -130,7 +159,7 @@ function harness({ reduced = false, supported = true } = {}) {
     media,
     angles,
     visible(value) {
-      observer?.([{ isIntersecting: value }]);
+      observers.get(target)?.([{ isIntersecting: value }]);
     },
     step(time) {
       const callbacks = [...frames.values()];
@@ -141,11 +170,18 @@ function harness({ reduced = false, supported = true } = {}) {
   };
 }
 
+function pointer(target, type, pointerType = 'mouse') {
+  const event = new globalThis.Event(type);
+  Object.defineProperty(event, 'pointerType', { value: pointerType });
+  target.dispatchEvent(event);
+}
+
 test('uploads once, caps frame rate, pauses offscreen and resumes without jumping', () => {
   const h = harness();
   assert.equal(h.frames.size, 0);
   assert.equal(h.stats().contexts, 0);
   h.visible(true);
+  h.enter();
   assert.deepEqual(h.ready, [true]);
   assert.equal(h.stats().uploads, 1);
   h.step(0);
@@ -162,9 +198,9 @@ test('uploads once, caps frame rate, pauses offscreen and resumes without jumpin
   h.step(60060);
   assert.ok(h.angles.at(-1) > angle);
   assert.equal(h.stats().uploads, 1);
-  h.controller.setPaused(true);
+  h.leave();
   assert.equal(h.frames.size, 0);
-  h.controller.setPaused(false);
+  h.enter();
   assert.equal(h.frames.size, 1);
   h.controller.dispose();
   assert.equal(h.frames.size, 0);
@@ -174,6 +210,7 @@ test('uploads once, caps frame rate, pauses offscreen and resumes without jumpin
 test('reduced motion and hidden documents stop all scheduling, including preference changes', () => {
   const h = harness({ reduced: true });
   h.visible(true);
+  h.enter();
   assert.equal(h.stats().contexts, 0);
   assert.equal(h.frames.size, 0);
   h.media.matches = false;
@@ -197,11 +234,13 @@ test('reduced motion and hidden documents stop all scheduling, including prefere
 test('unsupported or lost GPU contexts keep the static fallback and stop work', () => {
   const unsupported = harness({ supported: false });
   unsupported.visible(true);
+  unsupported.enter();
   assert.deepEqual(unsupported.ready, [false]);
   assert.equal(unsupported.frames.size, 0);
   unsupported.controller.dispose();
   const h = harness();
   h.visible(true);
+  h.enter();
   h.canvas.dispatchEvent(new globalThis.Event('webglcontextlost'));
   assert.deepEqual(h.ready, [true, false]);
   assert.equal(h.frames.size, 0);
@@ -209,4 +248,47 @@ test('unsupported or lost GPU contexts keep the static fallback and stop work', 
   h.visible(true);
   assert.equal(h.frames.size, 0);
   h.controller.dispose();
+});
+
+test('visible thumbnails stay still by default, ignore touch and pen, and stop on pointer cancellation', () => {
+  const h = harness();
+  h.visible(true);
+  assert.equal(h.frames.size, 0);
+  assert.equal(h.stats().contexts, 0);
+  h.enter('touch');
+  h.enter('pen');
+  assert.equal(h.frames.size, 0);
+  assert.equal(h.stats().contexts, 0);
+  h.enter();
+  assert.equal(h.frames.size, 1);
+  h.cancel();
+  assert.equal(h.frames.size, 0);
+  h.enter();
+  assert.equal(h.frames.size, 1);
+  h.leave();
+  assert.equal(h.frames.size, 0);
+  h.controller.dispose();
+  h.enter();
+  assert.equal(h.frames.size, 0);
+});
+
+test('hover and cleanup affect only their own thumbnail', () => {
+  const h = harness();
+  const second = h.addCard();
+  h.visible(true);
+  second.visible();
+  assert.equal(h.frames.size, 0);
+  h.enter();
+  assert.equal(h.frames.size, 1);
+  second.enter();
+  assert.equal(h.frames.size, 2);
+  h.leave();
+  assert.equal(h.frames.size, 1);
+  h.controller.dispose();
+  assert.equal(h.frames.size, 1);
+  second.leave();
+  assert.equal(h.frames.size, 0);
+  second.controller.dispose();
+  second.enter();
+  assert.equal(h.frames.size, 0);
 });

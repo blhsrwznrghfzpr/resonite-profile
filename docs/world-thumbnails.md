@@ -1,11 +1,14 @@
-# World thumbnail projection and automatic rotation
+# World thumbnail projection and hover rotation
 
 Created-world cards render 2:1 equirectangular thumbnails as a perspective
-view that slowly rotates through the full panorama. The camera looks at the centre of the panorama with a 90° horizontal field
+view that stays still by default and rotates only while the mouse pointer hovers
+over that thumbnail. The camera looks at the centre of the panorama with a 90° horizontal field
 of view; the 640 × 320 output corresponds to the central half of a square view.
-A complete turn takes 90 seconds. There are no drag controls or new dependencies.
-The pause/resume button above the cards stops all thumbnail rotation.
-`prefers-reduced-motion: reduce` always disables rotation, even after Resume.
+A complete turn takes about 60 seconds. There are no drag controls or new dependencies.
+There is no rotation toggle button. Leaving the thumbnail stops it in place.
+Each card is independent; hovering its title or description does not rotate it.
+Touch and pen events do not start rotation or leave a sticky hover state.
+`prefers-reduced-motion: reduce` always disables rotation, including on hover.
 The existing card link still opens the world on go.resonite.com.
 
 The approach is informed by
@@ -25,7 +28,7 @@ port of its projection-matrix implementation.
   view using the same decoded pixels, without fetching another image. Textures
   are uploaded once and retained while the card is mounted. Rendering is capped
   at 20 frames per second and stops entirely when the card is offscreen, the
-  document is hidden, rotation is paused, or reduced motion is requested.
+  document is hidden, the mouse is not hovering, or reduced motion is requested.
   Pausing preserves the viewing direction, and resuming does not jump ahead.
   GPU resources, observers and frame callbacks are released on unmount.
   No WebGL/IntersectionObserver support or context loss leaves the static
@@ -65,6 +68,7 @@ centre and orientation, the world link and accessible image label, and repeat on
 mobile, after reload, and after changing the thumbnail URL. Canvas failure must
 leave the original image visible, and a broken fallback must not retry forever.
 
-For rotation QA, verify visible movement over several seconds, pause/resume,
+For rotation QA, verify static initial display, movement only during mouse hover, pointer leave/cancel,
+touch remaining static, independent cards,
 scrolling offscreen and back, background-tab suspension, reduced-motion settings,
 and the wraparound seam. Rotation must not add image or API requests.
