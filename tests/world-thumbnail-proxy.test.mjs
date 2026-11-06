@@ -34,7 +34,7 @@ test('same-origin route returns binary image despite upstream having no CORS', a
   setup(
     async (target, init) => {
       assert.equal(target, `https://assets.resonite.com/${hash}`);
-      assert.equal(init.redirect, 'error');
+      assert.equal(init.redirect, 'manual');
       assert.equal(init.headers, undefined);
       assert.equal(init.method, 'GET');
       return imageResponse(undefined, { 'Set-Cookie': 'unwanted=1' });

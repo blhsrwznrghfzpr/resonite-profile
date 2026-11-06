@@ -41,7 +41,8 @@ export async function handleWorldThumbnail(
   try {
     const response = await fetch(`https://assets.resonite.com/${hash}`, {
       method: request.method,
-      redirect: 'error',
+      // Workers supports manual redirects; reject every 3xx below.
+      redirect: 'manual',
       signal: controller.signal,
       // Do not forward cookies, authorization, Origin, or user-supplied headers.
     });
