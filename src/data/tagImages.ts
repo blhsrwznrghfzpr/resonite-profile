@@ -9,6 +9,8 @@ const tagImages: Record<string, string> = {
     '76152d6d2f7e125620ae7138c66a8d0408ebed45580bea727c6a673b325f2311',
   'htc vive':
     'f92c0a3e31882b8075081dfa2d0f4d3403b89422ccebf75acaf6cb8947f51175',
+  'durian tester':
+    '1c62e8c224af005c9293bc636dd3e93e8f6d2aba202287cf40cbcfe1259129d4',
 
   // アクセシビリティ
   'hearing impaired':
@@ -21,8 +23,6 @@ const tagImages: Record<string, string> = {
 
   // フルーツ・その他
   potato: 'adf9ba7eee98dfa36e8fcf4130f2d6e60d353566c9f315c0f28a000dd06cad2c',
-  'durian tester':
-    '1c62e8c224af005c9293bc636dd3e93e8f6d2aba202287cf40cbcfe1259129d4',
   orange: '54d578102c1b23cfd3d99aa7afeea5e8e3dfb20466ca8ae6ee29d6ef69d2f564',
   blueberry: 'b1eb93861c2ab23510f3c525c2bbc69be5371a1715e80cd1880e8c771ac8bbf1',
   mango: '77cae650f07d32a36b31d1af896bc666eecbfdba5c37aecb869c982b2678ebda',
